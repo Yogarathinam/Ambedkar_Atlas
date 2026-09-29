@@ -94,9 +94,9 @@ body {
 }
 
 /* Kiosk mode specific overrides */
-.kiosk-mode button,
-.kiosk-mode a {
-  min-height: 52px;
+.kiosk-mode button:not(.kiosk-dot-btn):not(.kiosk-compact-btn),
+.kiosk-mode a:not(.kiosk-dot-btn):not(.kiosk-compact-btn) {
+  min-height: 48px;
 }
 
 /* Smart TV mode specific focus indicators */

@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 // Import authentic photographic panorama stitched from crowd1, crowd2, crowd3
 import crowdPanoramaWebp from '../../assets/kiosk/processed/kiosk-crowd-panorama.webp';
@@ -102,45 +102,26 @@ export const KioskBackground: React.FC<KioskBackgroundProps> = ({ currentSlideIn
       }}
       aria-hidden="true"
     >
-      {/* 1. Adaptive Ambient Light Glow */}
+      {/* 1. Subtle Radial Illumination behind Centre/Right Slideshow Area */}
       <motion.div
         key={`glow-${currentSlide.id}`}
-        className="absolute inset-0 opacity-80 transition-opacity duration-1000"
+        className="absolute inset-0 opacity-75 transition-opacity duration-1000 pointer-events-none"
         style={{
-          background: `radial-gradient(circle at 72% 42%, ${currentSlide.ambientGlow} 0%, transparent 65%)`,
+          background: `radial-gradient(ellipse at 70% 45%, ${currentSlide.ambientGlow} 0%, transparent 60%)`,
         }}
       />
 
-      {/* 2. Right-Center Presiding Ambedkar Slideshow (Positioned safely away from left touch UI and right vertical nav) */}
-      <div className="absolute right-20 sm:right-24 md:right-28 lg:right-32 top-8 bottom-12 w-[46%] sm:w-[44%] md:w-[40%] lg:w-[38%] flex items-center justify-center lg:justify-end pointer-events-none z-[5]">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide.id}
-            initial={{ opacity: 0, x: 25 }}
-            animate={{ opacity: 0.92, x: 0 }}
-            exit={{ opacity: 0, x: -25 }}
-            transition={{
-              duration: prefersReducedMotion ? 0.3 : 1.1,
-              ease: 'easeInOut',
-            }}
-            className="relative w-full h-full flex flex-col items-center justify-center lg:items-end lg:justify-center"
-          >
-            <img
-              src={currentSlide.image}
-              alt={currentSlide.title}
-              className="max-h-[80%] sm:max-h-[84%] w-auto max-w-full object-contain object-right-bottom filter drop-shadow-[0_18px_42px_rgba(41,37,31,0.22)]"
-            />
-            {/* Archival metadata caption pill under slide */}
-            <div className="mt-2.5 px-3 py-1 rounded-full bg-black/20 dark:bg-white/10 backdrop-blur-md border border-white/20 text-[10px] sm:text-[11px] text-stone-800 dark:text-stone-200 font-serif flex items-center gap-1.5 shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#B96535]" />
-              <span>{currentSlide.title}</span>
-              <span className="opacity-60 text-[9px] font-mono">({currentSlide.yearContext})</span>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
+      {/* 2. Soft Uniform Left Workspace Illumination (Preserves text legibility) */}
+      <div 
+        className="absolute inset-y-0 left-0 w-[55%] pointer-events-none opacity-40 transition-opacity duration-1000"
+        style={{
+          background: currentSlide.isDarkTheme 
+            ? 'linear-gradient(to right, rgba(24, 21, 18, 0.6) 0%, transparent 100%)' 
+            : 'linear-gradient(to right, rgba(245, 235, 221, 0.7) 0%, transparent 100%)',
+        }}
+      />
 
-      {/* 3. Bottom Panoramic Audience (Authentic crowd1, crowd2, crowd3 seamless panorama) */}
+      {/* 3. Bottom Panoramic Historical Audience Crowd (Authentic crowd panorama with upper gradient fade) */}
       <motion.div
         className="absolute bottom-0 inset-x-0 w-full flex items-end justify-center pointer-events-none z-10 transform-gpu will-change-transform"
         animate={
@@ -157,15 +138,20 @@ export const KioskBackground: React.FC<KioskBackgroundProps> = ({ currentSlideIn
               }
         }
       >
-        <div className="relative w-full overflow-hidden flex items-end justify-center">
+        <div 
+          className="relative w-full overflow-hidden flex items-end justify-center"
+          style={{
+            maskImage: 'linear-gradient(to top, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 100%)',
+            WebkitMaskImage: 'linear-gradient(to top, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 100%)',
+          }}
+        >
           <img
             src={crowdPanoramaWebp}
             alt="Historical Gathering Audience Panorama"
-            className="w-full h-auto min-h-[100px] sm:min-h-[140px] md:min-h-[170px] max-h-[18vh] object-cover object-bottom opacity-85 select-none filter contrast-105"
+            className="w-full h-auto min-h-[110px] sm:min-h-[140px] md:min-h-[160px] max-h-[18vh] lg:max-h-[22vh] object-cover object-bottom opacity-85 select-none filter contrast-105"
           />
         </div>
       </motion.div>
     </div>
   );
 };
-
