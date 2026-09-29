@@ -58,7 +58,7 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = ({ record, viewMode = 'gr
             <span className="text-[11px] text-[#29251F] bg-[#E7D5B9]/40 px-2 py-0.5 rounded border border-[#DED3C2]">
               {record.language}
             </span>
-            {record.verificationStatus === 'Archival Master' && (
+            {record.verificationStatus !== 'Authoritative External Catalogue' && (
               <span className="text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                 <span>Verified</span>
@@ -66,11 +66,11 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = ({ record, viewMode = 'gr
             )}
           </div>
 
-          <h3 className="font-serif text-xl font-bold text-[#29251F] group-hover:text-[#B96535] transition-colors leading-snug">
+          <h3 className="font-serif text-xl font-bold text-[#29251F] group-hover:text-[#B96535] transition-colors leading-snug line-clamp-2 sm:line-clamp-3">
             {record.title}
           </h3>
 
-          <p className="text-sm text-[#51483F] line-clamp-2 leading-relaxed">
+          <p className="text-sm text-[#51483F] line-clamp-3 sm:line-clamp-4 leading-relaxed">
             {record.shortDescription}
           </p>
 
@@ -110,9 +110,9 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = ({ record, viewMode = 'gr
   return (
     <div
       onClick={() => navigate(`/archive/${record.id}`)}
-      className="group bg-[#FBF8F2] border border-[#DED3C2] hover:border-[#B96535] rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer flex flex-col justify-between"
+      className="group h-full bg-[#FBF8F2] border border-[#DED3C2] hover:border-[#B96535] rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer flex flex-col justify-between"
     >
-      <div className="p-6 space-y-4">
+      <div className="p-6 space-y-4 flex-1 flex flex-col">
         {/* Top Badges & Actions */}
         <div className="flex items-center justify-between gap-2">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#E7D5B9]/80 text-[#713F2B] border border-[#DED3C2]">
@@ -152,20 +152,31 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = ({ record, viewMode = 'gr
           <span className="bg-[#E7D5B9]/40 px-1.5 py-0.5 rounded text-[11px]">
             {record.language}
           </span>
+          {record.verificationStatus !== 'Authoritative External Catalogue' && (
+            <>
+              <span>•</span>
+              <span className="text-[11px] text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 flex items-center gap-0.5">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                <span>Verified</span>
+              </span>
+            </>
+          )}
         </div>
 
-        {/* Title */}
-        <h3 className="font-serif text-xl font-bold text-[#29251F] group-hover:text-[#B96535] transition-colors line-clamp-2 leading-snug">
-          {record.title}
-        </h3>
+        {/* Title: allows 3 lines with consistent alignment */}
+        <div className="min-h-[3.75rem] flex items-start">
+          <h3 className="font-serif text-xl font-bold text-[#29251F] group-hover:text-[#B96535] transition-colors line-clamp-3 leading-snug">
+            {record.title}
+          </h3>
+        </div>
 
-        {/* Short Description */}
-        <p className="text-sm text-[#51483F] line-clamp-3 leading-relaxed">
+        {/* Short Description: generous 4-line room for meaningful context */}
+        <p className="text-sm text-[#51483F] line-clamp-4 leading-relaxed flex-1">
           {record.shortDescription}
         </p>
 
         {/* Tags */}
-        <div className="flex flex-wrap gap-1.5 pt-1">
+        <div className="flex flex-wrap gap-1.5 pt-2 mt-auto">
           {record.tags.slice(0, 3).map((tag) => (
             <span key={tag} className="text-[11px] bg-[#F5EBDD] text-[#713F2B] px-2 py-0.5 rounded-md border border-[#DED3C2]">
               #{tag}
@@ -175,7 +186,7 @@ export const ArchiveCard: React.FC<ArchiveCardProps> = ({ record, viewMode = 'gr
       </div>
 
       {/* Card Footer with Verification and Accession */}
-      <div className="px-6 py-3 bg-[#F5EBDD]/60 border-t border-[#DED3C2] flex items-center justify-between text-xs text-[#827567]">
+      <div className="px-6 py-3 bg-[#F5EBDD]/60 border-t border-[#DED3C2] flex items-center justify-between text-xs text-[#827567] mt-auto">
         <span className="truncate max-w-[170px]" title={record.sourceCollection}>
           {record.sourceCollection}
         </span>

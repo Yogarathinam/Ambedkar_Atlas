@@ -24,10 +24,11 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const urlPage = parseInt(searchParams.get('page') || `${initialPage}`, 10) || 1;
   const urlQuery = searchParams.get('q') || initialQuery || '';
+  const urlViewMode = searchParams.get('view');
 
   const [currentPage, setCurrentPage] = useState<number>(urlPage);
   const [pageInput, setPageInput] = useState<string>(`${urlPage}`);
-  const [viewMode, setViewMode] = useState<'pdf' | 'text'>('text'); // default to extracted text view for instant accessibility
+  const [viewMode, setViewMode] = useState<'pdf' | 'text'>(urlViewMode === 'pdf' ? 'pdf' : 'text');
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [tocOpen, setTocOpen] = useState<boolean>(true);
   
@@ -89,11 +90,53 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
     }
   };
 
-  // Find extracted page text if available
+  // Find current active TOC chapter for context and fallback
+  const activeTocChapter = useMemo(() => {
+    if (!volume.tableOfContents || volume.tableOfContents.length === 0) return null;
+    return (
+      volume.tableOfContents.find((item, idx) => {
+        const nextItem = volume.tableOfContents[idx + 1];
+        const endPage = item.endPage || (nextItem ? nextItem.startPage - 1 : totalPages);
+        return currentPage >= item.startPage && currentPage <= endPage;
+      }) || volume.tableOfContents[0]
+    );
+  }, [volume.tableOfContents, currentPage, totalPages]);
+
+  // Find extracted page text if available with intelligent chapter fallback
   const extractedPageData: ExtractedPage | undefined = useMemo(() => {
     if (!volume.extractedPages || volume.extractedPages.length === 0) return undefined;
-    return volume.extractedPages.find((p) => p.pdfPageNumber === currentPage);
-  }, [volume.extractedPages, currentPage]);
+
+    // 1. Exact page match
+    const exact = volume.extractedPages.find((p) => p.pdfPageNumber === currentPage);
+    if (exact && exact.text && exact.text.trim().length > 30) {
+      return exact;
+    }
+
+    // 2. If exact page is a title/divider page or has minimal text, find the first available page of this chapter
+    if (activeTocChapter) {
+      const chapterPages = volume.extractedPages.filter((p) => {
+        const matchesTitle =
+          p.chapterTitle &&
+          (activeTocChapter.title.toLowerCase().includes(p.chapterTitle.toLowerCase()) ||
+            p.chapterTitle.toLowerCase().includes(activeTocChapter.title.toLowerCase().slice(0, 15)));
+        const inPageRange =
+          p.pdfPageNumber >= activeTocChapter.startPage &&
+          (!activeTocChapter.endPage || p.pdfPageNumber <= activeTocChapter.endPage);
+        return matchesTitle || inPageRange;
+      });
+
+      if (chapterPages.length > 0) {
+        const candidate = chapterPages.find((p) => p.pdfPageNumber >= currentPage) || chapterPages[0];
+        if (candidate) return candidate;
+      }
+    }
+
+    // 3. Fallback to closest available extracted page
+    const sorted = [...volume.extractedPages].sort(
+      (a, b) => Math.abs(a.pdfPageNumber - currentPage) - Math.abs(b.pdfPageNumber - currentPage)
+    );
+    return sorted[0];
+  }, [volume.extractedPages, currentPage, activeTocChapter]);
 
   // In-document search matches
   const searchMatches = useMemo(() => {
@@ -158,6 +201,16 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
     }
   };
 
+  const handleTocClick = (item: { startPage: number; title: string }, openInPdf: boolean = false) => {
+    handlePageChange(item.startPage);
+    if (openInPdf) {
+      setViewMode('pdf');
+      showToast(`Opening "${item.title}" in Original PDF (p.${item.startPage})`, 'info');
+    } else {
+      showToast(`Selected "${item.title}" (p.${item.startPage})`, 'info');
+    }
+  };
+
   const handleCopyText = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -209,6 +262,13 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
         })}
       </div>
     );
+  };
+
+  const switchViewMode = (mode: 'pdf' | 'text') => {
+    setViewMode(mode);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('view', mode);
+    setSearchParams(newParams, { replace: true });
   };
 
   return (
@@ -270,8 +330,8 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
         <div className="flex items-center gap-2">
           <div className="flex items-center bg-[#E7D5B9]/70 p-1 rounded-2xl border border-[#DED3C2]">
             <button
-              onClick={() => setViewMode('text')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              onClick={() => switchViewMode('text')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 viewMode === 'text'
                   ? 'bg-[#29251F] text-white shadow-xs'
                   : 'text-[#51483F] hover:text-[#29251F]'
@@ -282,8 +342,8 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
             </button>
 
             <button
-              onClick={() => setViewMode('pdf')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              onClick={() => switchViewMode('pdf')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 viewMode === 'pdf'
                   ? 'bg-[#29251F] text-white shadow-xs'
                   : 'text-[#51483F] hover:text-[#29251F]'
@@ -461,31 +521,50 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
               </span>
             </div>
 
-            <div className="space-y-1 text-xs">
+            <div className="space-y-1.5 text-xs">
               {volume.tableOfContents.map((item, idx) => {
                 const isActive = currentPage >= item.startPage && (!item.endPage || currentPage <= item.endPage);
                 return (
-                  <button
+                  <div
                     key={idx}
-                    onClick={() => handlePageChange(item.startPage)}
-                    className={`w-full text-left p-2.5 rounded-xl border transition-all flex items-start justify-between gap-2 ${
+                    className={`w-full p-2.5 rounded-xl border transition-all flex items-start justify-between gap-2 group ${
                       isActive
                         ? 'bg-[#E7D5B9] text-[#713F2B] font-bold border-[#B96535] shadow-2xs'
                         : 'hover:bg-[#F5EBDD] text-[#51483F] border-transparent'
                     }`}
                   >
-                    <div>
+                    <button
+                      type="button"
+                      onClick={() => handleTocClick(item, false)}
+                      className="text-left flex-1"
+                    >
                       {item.part && (
                         <span className="block text-[9px] font-bold uppercase tracking-wider text-[#827567] mb-0.5">
                           {item.part}
                         </span>
                       )}
                       <span className="line-clamp-2 leading-snug">{item.title}</span>
+                      <span className="block text-[10px] font-mono text-[#827567] mt-1">
+                        Page {item.startPage}
+                      </span>
+                    </button>
+
+                    <div className="flex items-center gap-1 shrink-0 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => handleTocClick(item, true)}
+                        className={`px-2 py-1 rounded-lg border text-[10px] font-semibold transition-colors flex items-center gap-1 ${
+                          isActive
+                            ? 'bg-[#B96535] text-white border-[#B96535]'
+                            : 'bg-white hover:bg-[#E7D5B9] text-[#713F2B] border-[#DED3C2]'
+                        }`}
+                        title={`Open "${item.title}" directly in PDF reader at page ${item.startPage}`}
+                      >
+                        <BookOpen className="w-3 h-3" />
+                        <span>PDF</span>
+                      </button>
                     </div>
-                    <span className="shrink-0 text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/5">
-                      p.{item.startPage}
-                    </span>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -499,6 +578,40 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
           {viewMode === 'text' && (
             <div className="flex-1 flex flex-col p-5 sm:p-8 overflow-y-auto max-h-[720px] space-y-6">
               
+              {/* Active Chapter Banner & Quick PDF Jump */}
+              <div className="bg-[#FAF4EA] border border-[#DED3C2] rounded-2xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs">
+                <div className="flex items-center gap-2.5">
+                  <span className="p-1.5 rounded-lg bg-[#E7D5B9] text-[#713F2B]">
+                    <BookOpen className="w-4 h-4 text-[#B96535]" />
+                  </span>
+                  <div>
+                    <span className="block text-[10px] font-bold uppercase tracking-wider text-[#827567]">
+                      {activeTocChapter?.part || 'Current Chapter'}
+                    </span>
+                    <span className="font-serif text-base font-bold text-[#29251F]">
+                      {activeTocChapter?.title || volume.title}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono text-[#827567] hidden sm:inline">
+                    PDF Page {extractedPageData?.pdfPageNumber || currentPage} of {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setViewMode('pdf');
+                      showToast(`Switched to Original PDF at Page ${extractedPageData?.pdfPageNumber || currentPage}`, 'info');
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#B96535] hover:bg-[#713F2B] text-white rounded-xl text-xs font-bold shadow-2xs transition-colors"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Open in PDF Reader</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Multilingual Full-Text Translation Toolbar inside Transcription tab */}
               <div className="bg-[#FAF4EA] border border-[#DED3C2] rounded-2xl p-4 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -608,7 +721,7 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
               <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#DED3C2] text-xs text-[#827567]">
                 <div>
                   <span className="font-serif text-base font-bold text-[#29251F] mr-2">
-                    {extractedPageData?.chapterTitle || volume.title}
+                    {extractedPageData?.chapterTitle || activeTocChapter?.title || volume.title}
                   </span>
                   {extractedPageData?.bookPageNumber && (
                     <span className="text-[#713F2B] font-mono">
@@ -617,7 +730,7 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
                   )}
                 </div>
                 <div className="flex items-center gap-2 font-mono">
-                  <span>PDF Page {currentPage} of {totalPages}</span>
+                  <span>PDF Page {extractedPageData?.pdfPageNumber || currentPage} of {totalPages}</span>
                   {extractedPageData?.wordCount && (
                     <span>• {extractedPageData.wordCount} words</span>
                   )}
@@ -637,24 +750,40 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
                 ) : extractedPageData?.text ? (
                   renderHighlightedText(extractedPageData.text)
                 ) : (
-                  <div className="bg-[#FAF4EA] p-6 rounded-2xl border border-[#DED3C2] space-y-3">
+                  <div className="bg-[#FAF4EA] p-6 sm:p-8 rounded-2xl border border-[#DED3C2] space-y-4">
                     <div className="flex items-center gap-2 text-[#713F2B] font-semibold text-sm">
-                      <AlertCircle className="w-4 h-4" />
-                      <span>Page {currentPage} Preview</span>
+                      <BookOpen className="w-4 h-4 text-[#B96535]" />
+                      <span>{activeTocChapter?.title || `Page ${currentPage}`}</span>
                     </div>
-                    <p className="text-sm text-[#51483F] leading-relaxed">
-                      {volume.description}
-                    </p>
-                    <p className="text-xs text-[#827567]">
-                      Digital selectable text for this volume is accessible via the original PDF viewer or can be downloaded directly from the official Ministry of External Affairs repository.
-                    </p>
-                    <button
-                      onClick={() => setViewMode('pdf')}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#B96535] text-white rounded-xl text-xs font-bold shadow-2xs hover:bg-[#713F2B] transition-colors"
-                    >
-                      <BookOpen className="w-3.5 h-3.5" />
-                      <span>View in Original PDF Reader</span>
-                    </button>
+                    <div className="space-y-2 text-sm text-[#51483F] leading-relaxed">
+                      <p>
+                        This section corresponds to <strong>"{activeTocChapter?.title || volume.title}"</strong> starting on PDF page <strong>{activeTocChapter?.startPage || currentPage}</strong> in <em>{volume.title}</em>, officially published by the Ministry of External Affairs and the Dr. Ambedkar Foundation, Government of India.
+                      </p>
+                      <p className="text-xs text-[#827567]">
+                        The complete facsimile document with searchable text is accessible directly in the integrated PDF reader below or via official MEA download.
+                      </p>
+                    </div>
+                    <div className="pt-2 flex flex-wrap items-center gap-3">
+                      <button
+                        onClick={() => {
+                          setViewMode('pdf');
+                          showToast(`Opening "${activeTocChapter?.title || 'Chapter'}" in PDF Reader`, 'info');
+                        }}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#B96535] text-white rounded-xl text-xs font-bold shadow-2xs hover:bg-[#713F2B] transition-colors"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        <span>Open this Chapter in PDF Reader (Page {activeTocChapter?.startPage || currentPage})</span>
+                      </button>
+                      <a
+                        href={`${volume.originalUrl}#page=${activeTocChapter?.startPage || currentPage}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white text-[#51483F] border border-[#DED3C2] hover:bg-[#F5EBDD] rounded-xl text-xs font-semibold transition-colors"
+                      >
+                        <span>Download MEA PDF</span>
+                        <ArrowUpRight className="w-3.5 h-3.5 text-[#B96535]" />
+                      </a>
+                    </div>
                   </div>
                 )}
               </article>
@@ -664,11 +793,12 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
 
           {/* B. Original Document (PDF Viewer) */}
           {viewMode === 'pdf' && (
-            <div className="flex-1 flex flex-col h-[650px] relative bg-stone-100">
-              {/* Responsive Embedded Official MEA PDF */}
+            <div className="flex-1 flex flex-col h-[700px] relative bg-stone-100">
+              {/* Responsive Embedded Official MEA PDF with dynamic key to ensure reload on page changes */}
               <iframe
+                key={`${volume.id}-page-${currentPage}`}
                 src={`${volume.originalUrl}#page=${currentPage}&zoom=${zoomLevel}`}
-                title={`Original MEA PDF - ${volume.title}`}
+                title={`Original MEA PDF - ${volume.title} - Page ${currentPage}`}
                 className="w-full h-full border-0"
               />
 
@@ -676,9 +806,19 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
               <div className="absolute bottom-3 left-4 right-4 bg-[#29251F]/90 backdrop-blur-md text-white px-4 py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs shadow-lg">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-[#E7D5B9]" />
-                  <span>Viewing official MEA PDF: <strong>Page {currentPage}</strong></span>
+                  <span>
+                    Viewing official MEA PDF: <strong>Page {currentPage} of {totalPages}</strong>
+                    {activeTocChapter && ` • "${activeTocChapter.title}"`}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setViewMode('text')}
+                    className="px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-1"
+                  >
+                    <FileText className="w-3 h-3 text-[#E7D5B9]" />
+                    <span>View Extracted Text</span>
+                  </button>
                   <a
                     href={`${volume.originalUrl}#page=${currentPage}`}
                     target="_blank"

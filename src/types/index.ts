@@ -21,13 +21,28 @@ export type ArchiveEra =
 
 export type ArchiveLanguage = 'English' | 'Marathi' | 'Hindi' | 'Multilingual';
 
-export type VerificationStatus = 'Archival Master' | 'Verified Facsimile' | 'Historical Transcription' | 'Sample Prototype Asset';
+export type VerificationStatus = 
+  | 'Verified Primary Document' 
+  | 'Official Archival Facsimile' 
+  | 'Historical Transcription' 
+  | 'Authoritative External Catalogue'
+  | 'Archival Master';
+
+export type DateType = 
+  | 'written' 
+  | 'work_written'
+  | 'delivered' 
+  | 'speech_delivered'
+  | 'first_published' 
+  | 'subsequent_edition' 
+  | 'event_occurred';
 
 export interface CitationFormat {
   apa: string;
   chicago: string;
   mla: string;
   bibtex: string;
+  compact: string;
 }
 
 export interface ArchiveRecord {
@@ -36,12 +51,20 @@ export interface ArchiveRecord {
   category: ArchiveCategory;
   date: string;
   year: number;
+  dateType?: DateType;
   era: ArchiveEra;
   language: ArchiveLanguage;
   format: 'document' | 'audio' | 'video' | 'photo' | 'manuscript';
   description: string;
   shortDescription: string;
   sourceCollection: string;
+  sourceVolume?: string;
+  part?: string | null;
+  pageRange?: string;
+  sourceUrl?: string;
+  originalPdfUrl?: string;
+  publisher?: string;
+  author?: string;
   verificationStatus: VerificationStatus;
   accessionNumber: string;
   locationCreated?: string;
@@ -54,6 +77,8 @@ export interface ArchiveRecord {
   translation?: {
     language: string;
     text: string;
+    isTranslation: boolean;
+    originalLanguage: string;
   };
   audioNarration?: {
     durationSeconds: number;
@@ -67,24 +92,49 @@ export interface ArchiveRecord {
   tags: string[];
   featured?: boolean;
   relatedRecordIds: string[];
+  isExternallyCatalogued?: boolean;
+  linkedTimelineYear?: number;
+}
+
+export interface LinkedWritingReference {
+  id: string; // MEA Volume ID, e.g. 'mea-english-vol-1'
+  documentId: string;
+  title: string;
+  volume: string;
+  part?: string | null;
+  language: 'English' | 'Hindi';
+  pdfUrl: string;
+  pageNumber?: number | null;
+  pageVerified: boolean;
+  chapterTitle?: string;
+  historicalContext?: string;
 }
 
 export interface TimelineEvent {
   id: string;
   year: number;
   exactDate: string;
+  dateType: DateType;
+  datePrecision?: 'exact' | 'month_year' | 'year_only' | 'circa' | 'disputed';
   era: ArchiveEra;
   title: string;
   subtitle: string;
   summary: string;
   detailedNarrative: string;
   location: string;
+  sourceType: 'primary' | 'secondary';
+  sourceCitation: string;
+  sourceVolume?: string;
+  sourcePage?: number | string;
+  sourceUrl?: string;
   archivalQuote?: {
     text: string;
     source: string;
   };
   historicalSignificance: string;
   linkedArchiveIds: string[];
+  linkedRecordPage?: number;
+  linkedWritings?: LinkedWritingReference[];
   imageCaption?: string;
 }
 

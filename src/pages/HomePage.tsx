@@ -64,7 +64,7 @@ export const HomePage: React.FC = () => {
             {TIMELINE_EVENTS.slice(3, 7).map((evt) => (
               <div
                 key={evt.id}
-                onClick={() => navigate('/timeline')}
+                onClick={() => navigate(`/timeline?year=${evt.year}#timeline-event-${evt.year}`)}
                 className="bg-[#FBF8F2] border border-[#DED3C2] hover:border-[#B96535] rounded-xl p-5 cursor-pointer transition-all hover:shadow-md flex flex-col justify-between"
               >
                 <div>

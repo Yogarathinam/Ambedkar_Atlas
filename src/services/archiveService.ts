@@ -16,19 +16,27 @@ const DEVICE_MODE_KEY = 'ambedkar_atlas_device_mode';
  * Adapter to map MEA volume record into the standard ArchiveRecord interface
  */
 export function mapMeaVolumeToArchiveRecord(vol: MeaVolumeRecord): ArchiveRecord {
+  const volYear = vol.publicationYear || 1979;
   return {
     id: vol.id,
     title: vol.title,
     category: 'writings',
-    date: `${vol.publicationYear || 1979}`,
-    year: vol.publicationYear || 1979,
+    date: `${volYear}`,
+    year: volYear,
+    dateType: 'subsequent_edition',
     era: '1936-1946: Annihilation of Caste & Labour Movement',
     language: vol.language === 'English' ? 'English' : 'Hindi',
     format: 'document',
     description: vol.description,
     shortDescription: vol.description.slice(0, 160) + '...',
-    sourceCollection: 'Ministry of External Affairs (MEA), Government of India',
-    verificationStatus: 'Archival Master',
+    sourceCollection: 'Dr. Babasaheb Ambedkar: Writings and Speeches (BAWS)',
+    sourceVolume: vol.volume,
+    part: vol.part,
+    publisher: 'Dr. Ambedkar Foundation, Ministry of Social Justice & Empowerment / Ministry of External Affairs, Government of India',
+    author: 'Dr. B. R. Ambedkar',
+    sourceUrl: vol.sourceUrl,
+    originalPdfUrl: vol.originalUrl,
+    verificationStatus: 'Verified Primary Document',
     accessionNumber: `MEA-CWBA-VOL-${vol.volume}${vol.part ? `-PT-${vol.part}` : ''}`,
     mediaUrl: vol.originalUrl,
     transcription: vol.extractedPages?.[0]?.text || vol.description,
@@ -38,10 +46,11 @@ export function mapMeaVolumeToArchiveRecord(vol: MeaVolumeRecord): ArchiveRecord
       constitutionalSignificance: 'Official primary repository published under the authority of Dr. Ambedkar Foundation and the Ministry of External Affairs.'
     },
     citations: {
-      apa: `Ambedkar, B. R. (${vol.publicationYear || 1979}). Dr. Babasaheb Ambedkar: Writings and Speeches (Vol. ${vol.volume}). Ministry of External Affairs, Government of India.`,
-      chicago: `Ambedkar, Bhimrao Ramji. Dr. Babasaheb Ambedkar: Writings and Speeches. Vol. ${vol.volume}. New Delhi: Ministry of External Affairs, Government of India, ${vol.publicationYear || 1979}.`,
-      mla: `Ambedkar, B. R. Dr. Babasaheb Ambedkar: Writings and Speeches. Vol. ${vol.volume}, Ministry of External Affairs, Government of India, ${vol.publicationYear || 1979}.`,
-      bibtex: `@book{ambedkar_mea_vol${vol.volume},\n  title={Dr. Babasaheb Ambedkar: Writings and Speeches (Vol. ${vol.volume})},\n  author={Ambedkar, B. R.},\n  publisher={Ministry of External Affairs, Government of India},\n  year={${vol.publicationYear || 1979}}\n}`
+      chicago: `Ambedkar, Bhimrao Ramji. Dr. Babasaheb Ambedkar: Writings and Speeches. Vol. ${vol.volume}${vol.part ? `, Pt. ${vol.part}` : ''}. New Delhi: Dr. Ambedkar Foundation / Ministry of External Affairs, Government of India, ${volYear}. ${vol.originalUrl}.`,
+      compact: `Ambedkar, B. R., BAWS Vol. ${vol.volume}${vol.part ? `, Pt. ${vol.part}` : ''} (${volYear}).`,
+      apa: `Ambedkar, B. R. (${volYear}). Dr. Babasaheb Ambedkar: Writings and Speeches (Vol. ${vol.volume}${vol.part ? `, Pt. ${vol.part}` : ''}). Ministry of External Affairs, Government of India. ${vol.originalUrl}`,
+      mla: `Ambedkar, Bhimrao Ramji. Dr. Babasaheb Ambedkar: Writings and Speeches. Vol. ${vol.volume}${vol.part ? `, pt. ${vol.part}` : ''}, Dr. Ambedkar Foundation / Ministry of External Affairs, ${volYear}. Web. <${vol.originalUrl}>.`,
+      bibtex: `@book{ambedkar_mea_vol${vol.volume}${vol.part ? `_pt${vol.part}` : ''},\n  title={Dr. Babasaheb Ambedkar: Writings and Speeches (Vol. ${vol.volume}${vol.part ? `, Pt. ${vol.part}` : ''})},\n  author={Ambedkar, Bhimrao Ramji},\n  publisher={Dr. Ambedkar Foundation / Ministry of External Affairs, Government of India},\n  year={${volYear}},\n  url={${vol.originalUrl}}\n}`
     },
     tags: vol.tags,
     relatedRecordIds: []
@@ -55,11 +64,10 @@ export const archiveService = {
   async getRecords(filters: FilterState): Promise<{ records: ArchiveRecord[]; totalCount: number }> {
     await delay(180);
 
-    // Merge baseline archive records with mapped MEA volumes
-    const meaRecords = MEA_INGESTED_VOLUMES.map(mapMeaVolumeToArchiveRecord);
-    let result = [...ARCHIVE_RECORDS, ...meaRecords];
+    // Filter exclusively from verified official MEA volumes
+    let result = MEA_INGESTED_VOLUMES.map(mapMeaVolumeToArchiveRecord);
 
-    // Search query filter
+    // Search query filter across actual titles, descriptions, tags, and TOC chapters
     if (filters.searchQuery.trim()) {
       const q = filters.searchQuery.toLowerCase().trim();
       result = result.filter((item) => 
@@ -71,24 +79,14 @@ export const archiveService = {
       );
     }
 
-    // Category filter
-    if (filters.category && filters.category !== 'all') {
-      result = result.filter((item) => item.category === filters.category);
+    // Language filter (English vs Hindi)
+    if (filters.language && filters.language !== 'all') {
+      result = result.filter((item) => item.language === filters.language);
     }
 
     // Era filter
     if (filters.era && filters.era !== 'all') {
       result = result.filter((item) => item.era === filters.era);
-    }
-
-    // Language filter
-    if (filters.language && filters.language !== 'all') {
-      result = result.filter((item) => item.language === filters.language);
-    }
-
-    // Format filter
-    if (filters.format && filters.format !== 'all') {
-      result = result.filter((item) => item.format === filters.format);
     }
 
     // Sorting
@@ -119,29 +117,38 @@ export const archiveService = {
   },
 
   /**
-   * Get single record by ID with related records
+   * Get single MEA document by ID, with legacy ID fallback resolution
    */
   async getRecordById(id: string): Promise<{ record: ArchiveRecord | null; relatedRecords: ArchiveRecord[] }> {
     await delay(120);
 
-    // 1. Check primary archive records
-    let record = ARCHIVE_RECORDS.find((r) => r.id === id) || null;
+    const legacyMap: Record<string, string> = {
+      'annihilation-of-caste-1936': 'mea-english-vol-1',
+      'castes-in-india-1916': 'mea-english-vol-1',
+      'the-problem-of-the-rupee-1923': 'mea-english-vol-6',
+      'constituent-assembly-final-address-1949': 'mea-english-vol-13',
+      'mahad-satyagraha-speech-1927': 'mea-english-vol-17-pt-1',
+      'burning-of-manusmriti-1927': 'mea-english-vol-17-pt-1',
+      'poona-pact-agreement-1932': 'mea-english-vol-17-pt-1',
+      'hindu-code-bill-resignation-1951': 'mea-english-vol-14-pt-2',
+      'deekshabhoomi-buddhist-conversion-1956': 'mea-english-vol-17-pt-3',
+      'the-buddha-and-his-dhamma-1956': 'mea-english-vol-11',
+    };
 
-    // 2. Check MEA Ingested Volumes
-    if (!record) {
-      const meaVol = MEA_INGESTED_VOLUMES.find((v) => v.id === id);
-      if (meaVol) {
-        record = mapMeaVolumeToArchiveRecord(meaVol);
-      }
-    }
+    const targetId = legacyMap[id] || id;
+    const meaVol = MEA_INGESTED_VOLUMES.find((v) => v.id === targetId);
 
-    if (!record) {
+    if (!meaVol) {
       return { record: null, relatedRecords: [] };
     }
 
-    const relatedRecords = ARCHIVE_RECORDS.filter(
-      (r) => record?.relatedRecordIds.includes(r.id) || (r.category === record?.category && r.id !== record?.id)
-    ).slice(0, 3);
+    const record = mapMeaVolumeToArchiveRecord(meaVol);
+
+    // Related volumes in the same language
+    const relatedRecords = MEA_INGESTED_VOLUMES
+      .filter((v) => v.id !== meaVol.id && v.language === meaVol.language)
+      .slice(0, 3)
+      .map(mapMeaVolumeToArchiveRecord);
 
     return { record, relatedRecords };
   },
@@ -150,7 +157,20 @@ export const archiveService = {
    * Get MEA Volume by ID
    */
   getMeaVolumeById(id: string): MeaVolumeRecord | undefined {
-    return MEA_INGESTED_VOLUMES.find((v) => v.id === id);
+    const legacyMap: Record<string, string> = {
+      'annihilation-of-caste-1936': 'mea-english-vol-1',
+      'castes-in-india-1916': 'mea-english-vol-1',
+      'the-problem-of-the-rupee-1923': 'mea-english-vol-6',
+      'constituent-assembly-final-address-1949': 'mea-english-vol-13',
+      'mahad-satyagraha-speech-1927': 'mea-english-vol-17-pt-1',
+      'burning-of-manusmriti-1927': 'mea-english-vol-17-pt-1',
+      'poona-pact-agreement-1932': 'mea-english-vol-17-pt-1',
+      'hindu-code-bill-resignation-1951': 'mea-english-vol-14-pt-2',
+      'deekshabhoomi-buddhist-conversion-1956': 'mea-english-vol-17-pt-3',
+      'the-buddha-and-his-dhamma-1956': 'mea-english-vol-11',
+    };
+    const targetId = legacyMap[id] || id;
+    return MEA_INGESTED_VOLUMES.find((v) => v.id === targetId);
   },
 
   /**
@@ -161,11 +181,38 @@ export const archiveService = {
   },
 
   /**
-   * Get featured records for Homepage showcase
+   * Get accurate counts directly from the verified MEA collection
+   */
+  getMeaStats(): { totalDocuments: number; englishCount: number; hindiCount: number; numberedVolumesCount: number } {
+    const englishCount = MEA_INGESTED_VOLUMES.filter((v) => v.language === 'English').length;
+    const hindiCount = MEA_INGESTED_VOLUMES.filter((v) => v.language === 'Hindi').length;
+    const distinctVolumes = new Set(MEA_INGESTED_VOLUMES.map((v) => `${v.language}-${v.volume}`));
+
+    return {
+      totalDocuments: MEA_INGESTED_VOLUMES.length,
+      englishCount,
+      hindiCount,
+      numberedVolumesCount: distinctVolumes.size,
+    };
+  },
+
+  /**
+   * Get featured MEA records for Homepage showcase
    */
   async getFeaturedRecords(): Promise<ArchiveRecord[]> {
     await delay(120);
-    return ARCHIVE_RECORDS.filter((r) => r.featured).slice(0, 6);
+    // Showcase primary landmark English MEA volumes
+    const featuredIds = [
+      'mea-english-vol-1',
+      'mea-english-vol-6',
+      'mea-english-vol-11',
+      'mea-english-vol-13',
+      'mea-english-vol-14-pt-i',
+      'mea-english-vol-17-pt-1',
+    ];
+    return MEA_INGESTED_VOLUMES
+      .filter((v) => featuredIds.includes(v.id))
+      .map(mapMeaVolumeToArchiveRecord);
   },
 
   /**
@@ -181,28 +228,19 @@ export const archiveService = {
   },
 
   /**
-   * Global Search across both primary archives and MEA volumes
+   * Global Search across verified MEA volumes and tables of contents
    */
   async searchGlobal(query: string): Promise<ArchiveRecord[]> {
     await delay(150);
     if (!query.trim()) return [];
     const q = query.toLowerCase().trim();
 
-    const baselineMatches = ARCHIVE_RECORDS.filter((item) =>
-      item.title.toLowerCase().includes(q) ||
-      item.description.toLowerCase().includes(q) ||
-      item.tags.some((t) => t.toLowerCase().includes(q)) ||
-      (item.transcription && item.transcription.toLowerCase().includes(q))
-    );
-
-    const meaMatches = MEA_INGESTED_VOLUMES.filter((v) =>
+    return MEA_INGESTED_VOLUMES.filter((v) =>
       v.title.toLowerCase().includes(q) ||
       v.description.toLowerCase().includes(q) ||
       v.keyThemes.some((t) => t.toLowerCase().includes(q)) ||
       v.tableOfContents.some((c) => c.title.toLowerCase().includes(q))
     ).map(mapMeaVolumeToArchiveRecord);
-
-    return [...baselineMatches, ...meaMatches];
   },
 
   /**

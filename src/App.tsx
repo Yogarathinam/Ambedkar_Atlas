@@ -5,6 +5,7 @@ import { BookmarkProvider } from './context/BookmarkContext';
 import { ToastProvider } from './context/ToastContext';
 import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
+import { ScrollToTop } from './components/common/ScrollToTop';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -56,6 +57,7 @@ export default function App() {
       <DeviceProvider>
         <BookmarkProvider>
           <Router>
+            <ScrollToTop />
             <AppLayout />
           </Router>
         </BookmarkProvider>

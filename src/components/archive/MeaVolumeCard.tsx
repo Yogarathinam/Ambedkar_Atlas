@@ -13,10 +13,10 @@ export const MeaVolumeCard: React.FC<MeaVolumeCardProps> = ({ volume }) => {
   const isHindi = volume.language === 'Hindi';
 
   return (
-    <div className="bg-[#FBF8F2] border-2 border-[#DED3C2] hover:border-[#B96535] rounded-3xl p-5 sm:p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
+    <div className="h-full bg-[#FBF8F2] border-2 border-[#DED3C2] hover:border-[#B96535] rounded-3xl p-5 sm:p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group">
       
       {/* Top Header: Volume / Part & Language Badges */}
-      <div className="space-y-3">
+      <div className="space-y-3 flex-1 flex flex-col">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#E7D5B9] text-[#713F2B] border border-[#DED3C2]">
@@ -40,14 +40,14 @@ export const MeaVolumeCard: React.FC<MeaVolumeCardProps> = ({ volume }) => {
         </div>
 
         {/* Title */}
-        <Link to={`/archive/${volume.id}`} className="block group-hover:text-[#B96535] transition-colors">
-          <h3 className="font-serif text-lg sm:text-xl font-bold text-[#29251F] leading-snug line-clamp-2">
+        <Link to={`/archive/${volume.id}`} className="block group-hover:text-[#B96535] transition-colors min-h-[3.25rem] flex items-start">
+          <h3 className="font-serif text-lg sm:text-xl font-bold text-[#29251F] leading-snug line-clamp-3">
             {volume.title}
           </h3>
         </Link>
 
         {/* Description */}
-        <p className="text-xs sm:text-sm text-[#51483F] leading-relaxed line-clamp-3">
+        <p className="text-xs sm:text-sm text-[#51483F] leading-relaxed line-clamp-4 flex-1">
           {volume.description}
         </p>
 

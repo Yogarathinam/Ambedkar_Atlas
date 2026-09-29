@@ -400,7 +400,7 @@ export const SearchPage: React.FC = () => {
           <div className="bg-[#FBF8F2] border border-[#DED3C2] rounded-2xl p-8 text-center space-y-3">
             <Sparkles className="w-8 h-8 text-[#B96535] mx-auto opacity-70" />
             <h3 className="font-serif text-xl font-bold text-[#29251F]">
-              Search Across 60 MEA Volumes & 200+ Primary Records
+              Search Across 60 MEA Volumes & Verified Primary Records
             </h3>
             <p className="text-sm text-[#827567] max-w-md mx-auto">
               Enter any quotation, chapter title, or keyword above to search through treaties, speeches, and parliamentary debates, or browse by collection.
