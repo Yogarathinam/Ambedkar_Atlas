@@ -181,7 +181,7 @@ export const KioskPage: React.FC = () => {
   return (
     <div 
       className={`min-h-screen lg:h-screen lg:max-h-screen w-screen relative flex flex-col justify-between p-3.5 sm:p-5 lg:p-6 kiosk-mode selection:bg-transparent overflow-x-hidden overflow-y-auto lg:overflow-hidden transition-colors duration-1000 ${
-        isDark ? 'text-[#FBF8F2]' : 'text-[#29251F]'
+        isDark ? 'dark text-[#FBF8F2]' : 'text-[#29251F]'
       }`}
     >
       {/* Dynamic Ambient Background Illumination & Bottom Historical Audience Crowd */}
@@ -190,10 +190,16 @@ export const KioskPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* MOBILE / TABLET COMPACT TOP BAR (< lg displays)                           */}
       {/* ========================================================================= */}
-      <header className="lg:hidden relative z-40 w-full flex items-center justify-between px-3 py-2 rounded-xl border-2 mb-3 shadow-md backdrop-blur-md transition-colors bg-[#FBF8F2]/90 dark:bg-[#23201C]/90 border-[#DED3C2] dark:border-[#423B33]">
+      <header className={`lg:hidden relative z-40 w-full flex items-center justify-between px-3 py-2 rounded-xl border-2 mb-3 shadow-md backdrop-blur-md transition-colors ${
+        isDark 
+          ? 'bg-[#23201C] border-[#423B33] text-[#FBF8F2]' 
+          : 'bg-white border-[#D5C7B2] text-[#29251F]'
+      }`}>
         <div className="flex items-center gap-2">
           <img src="/seal.svg" alt="Archival Seal" className="w-6 h-6 object-contain" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#B96535] dark:text-[#C89B3C]">
+          <span className={`text-[10px] font-bold uppercase tracking-[0.16em] ${
+            isDark ? 'text-[#C89B3C]' : 'text-[#B96535]'
+          }`}>
             Ambedkar Atlas
           </span>
         </div>
@@ -210,7 +216,9 @@ export const KioskPage: React.FC = () => {
             className={`px-2 py-1 rounded-lg text-xs flex items-center gap-1 transition-all cursor-pointer ${
               narrationVoiceActive
                 ? 'bg-[#B96535] text-white'
-                : 'bg-black/5 dark:bg-white/10 text-stone-700 dark:text-stone-300'
+                : isDark 
+                  ? 'bg-white/10 text-stone-200' 
+                  : 'bg-black/5 text-stone-700'
             }`}
             aria-label="Toggle voice narration"
           >
@@ -227,8 +235,8 @@ export const KioskPage: React.FC = () => {
                 onClick={() => handleLanguageChange(lang)}
                 className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
                   selectedLanguage === lang
-                    ? 'bg-[#29251F] dark:bg-[#FBF8F2] text-[#FBF8F2] dark:text-[#29251F]'
-                    : 'text-stone-500 hover:text-stone-900'
+                    ? isDark ? 'bg-[#FBF8F2] text-[#29251F]' : 'bg-[#29251F] text-[#FBF8F2]'
+                    : isDark ? 'text-stone-400 hover:text-stone-100' : 'text-stone-500 hover:text-stone-900'
                 }`}
               >
                 {lang === 'English' ? 'EN' : lang === 'मराठी' ? 'म' : 'हि'}
@@ -260,7 +268,7 @@ export const KioskPage: React.FC = () => {
           {/* Exhibition Plaque Label */}
           <div className="flex items-center gap-2">
             <span 
-              className={`inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full border shadow-xs ${
+              className={`inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full border shadow-xs transition-colors ${
                 isDark 
                   ? 'bg-[#C89B3C]/15 border-[#C89B3C]/35 text-[#C89B3C]' 
                   : 'bg-[#B96535]/10 border-[#B96535]/25 text-[#B96535]'
@@ -273,7 +281,7 @@ export const KioskPage: React.FC = () => {
           
           {/* Main Editorial Heading (Exact 2 lines max, Cormorant Garamond, 2nd line Terracotta) */}
           <div>
-            <h1 className={`font-serif text-2xl sm:text-3.5xl lg:text-[2.5rem] xl:text-[3.15rem] font-bold leading-[1.08] tracking-tight ${
+            <h1 className={`font-serif text-2xl sm:text-3.5xl lg:text-[2.5rem] xl:text-[3.15rem] font-bold leading-[1.08] tracking-tight transition-colors ${
               isDark ? 'text-[#FBF8F2]' : 'text-[#29251F]'
             }`}>
               {content.headingLine1}<br />
@@ -283,28 +291,34 @@ export const KioskPage: React.FC = () => {
             </h1>
             
             {/* Description */}
-            <p className={`text-xs sm:text-sm mt-1.5 sm:mt-2 max-w-xl lg:max-w-2xl leading-relaxed ${
+            <p className={`text-xs sm:text-sm mt-1.5 sm:mt-2 max-w-xl lg:max-w-2xl leading-relaxed transition-colors ${
               isDark ? 'text-[#D5C9B8]' : 'text-[#51483F]'
             }`}>
               {content.description}
             </p>
           </div>
 
-          {/* Prominent Wide Touch Search Bar */}
+          {/* Prominent Wide Touch Search Bar (High Contrast, Theme Adaptive) */}
           <form onSubmit={handleKioskSearchSubmit} className="w-full max-w-xl lg:max-w-2xl pt-0.5">
-            <div className={`relative flex items-center rounded-xl sm:rounded-2xl border-2 transition-all shadow-sm ${
+            <div className={`relative flex items-center rounded-xl sm:rounded-2xl border-2 transition-all ${
               isDark 
-                ? 'bg-[#23201C]/95 border-[#51483F] focus-within:border-[#C89B3C]' 
-                : 'bg-[#FBF8F2]/95 border-[#DED3C2] focus-within:border-[#B96535]'
+                ? 'bg-[#23201C] border-[#423B33] focus-within:border-[#C89B3C] shadow-[0_4px_20px_rgba(0,0,0,0.35)]' 
+                : 'bg-white border-[#D5C7B2] focus-within:border-[#B96535] shadow-[0_4px_16px_rgba(41,37,31,0.07)]'
             }`}>
-              <Search className="w-4 h-4 sm:w-5 sm:h-5 text-[#827567] dark:text-[#A89C8F] absolute left-3.5 sm:left-4 pointer-events-none shrink-0" />
+              <Search className={`w-4 h-4 sm:w-5 sm:h-5 absolute left-3.5 sm:left-4 pointer-events-none shrink-0 transition-colors ${
+                isDark ? 'text-[#A89C8F]' : 'text-[#827567]'
+              }`} />
               
               <input
                 type="text"
                 value={kioskSearch}
                 onChange={(e) => setKioskSearch(e.target.value)}
                 placeholder={content.searchPlaceholder}
-                className="w-full pl-10 sm:pl-12 pr-24 sm:pr-28 py-2.5 sm:py-3.5 text-xs sm:text-sm bg-transparent rounded-xl sm:rounded-2xl text-[#29251F] dark:text-[#FBF8F2] placeholder-[#827567] dark:placeholder-[#A89C8F] focus:outline-none"
+                className={`w-full pl-10 sm:pl-12 pr-24 sm:pr-28 py-2.5 sm:py-3.5 text-xs sm:text-sm bg-transparent rounded-xl sm:rounded-2xl focus:outline-none transition-colors ${
+                  isDark 
+                    ? 'text-[#FBF8F2] placeholder-[#A89C8F]' 
+                    : 'text-[#29251F] placeholder-[#6E6255]'
+                }`}
               />
               
               <button
@@ -316,7 +330,7 @@ export const KioskPage: React.FC = () => {
             </div>
           </form>
 
-          {/* Four Primary Exhibition Categories (2x2 Balanced Touch Grid, Equal Heights, No Truncation) */}
+          {/* Four Primary Exhibition Categories (2x2 Balanced Touch Grid, High Contrast, Theme Adaptive) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 w-full max-w-xl lg:max-w-2xl pt-0.5">
             
             {/* Tile 1: Writings & Books */}
@@ -329,10 +343,10 @@ export const KioskPage: React.FC = () => {
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && navigate('/archive?category=writings')}
               aria-label={content.categories.writingsTitle}
-              className={`rounded-xl sm:rounded-2xl p-3 sm:p-3.5 lg:p-4 border-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] flex items-center gap-3 sm:gap-3.5 min-h-[76px] sm:min-h-[84px] h-full ${
+              className={`rounded-xl sm:rounded-2xl p-3 sm:p-3.5 lg:p-4 border-2 transition-all cursor-pointer active:scale-[0.98] flex items-center gap-3 sm:gap-3.5 min-h-[78px] sm:min-h-[86px] h-full ${
                 isDark 
-                  ? 'bg-[#23201C]/90 hover:bg-[#2A2621] border-[#423B33] hover:border-[#C89B3C]' 
-                  : 'bg-[#FBF8F2]/95 hover:bg-white border-[#DED3C2] hover:border-[#B96535]'
+                  ? 'bg-[#23201C] hover:bg-[#2C2722] border-[#423B33] hover:border-[#C89B3C] shadow-[0_4px_20px_rgba(0,0,0,0.35)]' 
+                  : 'bg-white hover:bg-[#FFFDF9] border-[#D5C7B2] hover:border-[#B96535] shadow-[0_4px_16px_rgba(41,37,31,0.07)]'
               }`}
             >
               <div className={`w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
@@ -341,10 +355,14 @@ export const KioskPage: React.FC = () => {
                 <BookOpen className="w-5 h-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="font-serif text-sm sm:text-base font-bold text-[#29251F] dark:text-[#FBF8F2] leading-tight">
+                <h2 className={`font-serif text-sm sm:text-base font-bold leading-tight transition-colors ${
+                  isDark ? 'text-[#FBF8F2]' : 'text-[#29251F]'
+                }`}>
                   {content.categories.writingsTitle}
                 </h2>
-                <p className="text-[11px] sm:text-xs text-[#51483F] dark:text-[#D5C9B8] leading-snug mt-1">
+                <p className={`text-[11px] sm:text-xs leading-snug mt-1 transition-colors ${
+                  isDark ? 'text-[#D5C9B8]' : 'text-[#51483F]'
+                }`}>
                   {content.categories.writingsDesc}
                 </p>
               </div>
@@ -360,10 +378,10 @@ export const KioskPage: React.FC = () => {
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && navigate('/archive?category=speeches')}
               aria-label={content.categories.speechesTitle}
-              className={`rounded-xl sm:rounded-2xl p-3 sm:p-3.5 lg:p-4 border-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] flex items-center gap-3 sm:gap-3.5 min-h-[76px] sm:min-h-[84px] h-full ${
+              className={`rounded-xl sm:rounded-2xl p-3 sm:p-3.5 lg:p-4 border-2 transition-all cursor-pointer active:scale-[0.98] flex items-center gap-3 sm:gap-3.5 min-h-[78px] sm:min-h-[86px] h-full ${
                 isDark 
-                  ? 'bg-[#23201C]/90 hover:bg-[#2A2621] border-[#423B33] hover:border-[#C89B3C]' 
-                  : 'bg-[#FBF8F2]/95 hover:bg-white border-[#DED3C2] hover:border-[#B96535]'
+                  ? 'bg-[#23201C] hover:bg-[#2C2722] border-[#423B33] hover:border-[#C89B3C] shadow-[0_4px_20px_rgba(0,0,0,0.35)]' 
+                  : 'bg-white hover:bg-[#FFFDF9] border-[#D5C7B2] hover:border-[#B96535] shadow-[0_4px_16px_rgba(41,37,31,0.07)]'
               }`}
             >
               <div className={`w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
@@ -372,10 +390,14 @@ export const KioskPage: React.FC = () => {
                 <Volume2 className="w-5 h-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="font-serif text-sm sm:text-base font-bold text-[#29251F] dark:text-[#FBF8F2] leading-tight">
+                <h2 className={`font-serif text-sm sm:text-base font-bold leading-tight transition-colors ${
+                  isDark ? 'text-[#FBF8F2]' : 'text-[#29251F]'
+                }`}>
                   {content.categories.speechesTitle}
                 </h2>
-                <p className="text-[11px] sm:text-xs text-[#51483F] dark:text-[#D5C9B8] leading-snug mt-1">
+                <p className={`text-[11px] sm:text-xs leading-snug mt-1 transition-colors ${
+                  isDark ? 'text-[#D5C9B8]' : 'text-[#51483F]'
+                }`}>
                   {content.categories.speechesDesc}
                 </p>
               </div>
@@ -391,10 +413,10 @@ export const KioskPage: React.FC = () => {
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && navigate('/timeline')}
               aria-label={content.categories.timelineTitle}
-              className={`rounded-xl sm:rounded-2xl p-3 sm:p-3.5 lg:p-4 border-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] flex items-center gap-3 sm:gap-3.5 min-h-[76px] sm:min-h-[84px] h-full ${
+              className={`rounded-xl sm:rounded-2xl p-3 sm:p-3.5 lg:p-4 border-2 transition-all cursor-pointer active:scale-[0.98] flex items-center gap-3 sm:gap-3.5 min-h-[78px] sm:min-h-[86px] h-full ${
                 isDark 
-                  ? 'bg-[#23201C]/90 hover:bg-[#2A2621] border-[#423B33] hover:border-[#C89B3C]' 
-                  : 'bg-[#FBF8F2]/95 hover:bg-white border-[#DED3C2] hover:border-[#B96535]'
+                  ? 'bg-[#23201C] hover:bg-[#2C2722] border-[#423B33] hover:border-[#C89B3C] shadow-[0_4px_20px_rgba(0,0,0,0.35)]' 
+                  : 'bg-white hover:bg-[#FFFDF9] border-[#D5C7B2] hover:border-[#B96535] shadow-[0_4px_16px_rgba(41,37,31,0.07)]'
               }`}
             >
               <div className={`w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
@@ -403,10 +425,14 @@ export const KioskPage: React.FC = () => {
                 <Clock className="w-5 h-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="font-serif text-sm sm:text-base font-bold text-[#29251F] dark:text-[#FBF8F2] leading-tight">
+                <h2 className={`font-serif text-sm sm:text-base font-bold leading-tight transition-colors ${
+                  isDark ? 'text-[#FBF8F2]' : 'text-[#29251F]'
+                }`}>
                   {content.categories.timelineTitle}
                 </h2>
-                <p className="text-[11px] sm:text-xs text-[#51483F] dark:text-[#D5C9B8] leading-snug mt-1">
+                <p className={`text-[11px] sm:text-xs leading-snug mt-1 transition-colors ${
+                  isDark ? 'text-[#D5C9B8]' : 'text-[#51483F]'
+                }`}>
                   {content.categories.timelineDesc}
                 </p>
               </div>
@@ -422,10 +448,10 @@ export const KioskPage: React.FC = () => {
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && navigate('/research')}
               aria-label={content.categories.researchTitle}
-              className={`rounded-xl sm:rounded-2xl p-3 sm:p-3.5 lg:p-4 border-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] flex items-center gap-3 sm:gap-3.5 min-h-[76px] sm:min-h-[84px] h-full ${
+              className={`rounded-xl sm:rounded-2xl p-3 sm:p-3.5 lg:p-4 border-2 transition-all cursor-pointer active:scale-[0.98] flex items-center gap-3 sm:gap-3.5 min-h-[78px] sm:min-h-[86px] h-full ${
                 isDark 
-                  ? 'bg-[#23201C]/90 hover:bg-[#2A2621] border-[#423B33] hover:border-[#C89B3C]' 
-                  : 'bg-[#FBF8F2]/95 hover:bg-white border-[#DED3C2] hover:border-[#B96535]'
+                  ? 'bg-[#23201C] hover:bg-[#2C2722] border-[#423B33] hover:border-[#C89B3C] shadow-[0_4px_20px_rgba(0,0,0,0.35)]' 
+                  : 'bg-white hover:bg-[#FFFDF9] border-[#D5C7B2] hover:border-[#B96535] shadow-[0_4px_16px_rgba(41,37,31,0.07)]'
               }`}
             >
               <div className={`w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
@@ -434,10 +460,14 @@ export const KioskPage: React.FC = () => {
                 <Bot className="w-5 h-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="font-serif text-sm sm:text-base font-bold text-[#29251F] dark:text-[#FBF8F2] leading-tight">
+                <h2 className={`font-serif text-sm sm:text-base font-bold leading-tight transition-colors ${
+                  isDark ? 'text-[#FBF8F2]' : 'text-[#29251F]'
+                }`}>
                   {content.categories.researchTitle}
                 </h2>
-                <p className="text-[11px] sm:text-xs text-[#51483F] dark:text-[#D5C9B8] leading-snug mt-1">
+                <p className={`text-[11px] sm:text-xs leading-snug mt-1 transition-colors ${
+                  isDark ? 'text-[#D5C9B8]' : 'text-[#51483F]'
+                }`}>
                   {content.categories.researchDesc}
                 </p>
               </div>
@@ -490,8 +520,8 @@ export const KioskPage: React.FC = () => {
                 aria-label="Previous slide"
                 className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-xs ${
                   isDark 
-                    ? 'bg-[#23201C]/80 hover:bg-[#363028] border-white/10 text-stone-300' 
-                    : 'bg-[#FBF8F2]/90 hover:bg-white border-[#DED3C2] text-stone-700'
+                    ? 'bg-[#23201C] hover:bg-[#363028] border-[#423B33] text-stone-200' 
+                    : 'bg-white hover:bg-stone-50 border-[#D5C7B2] text-stone-800'
                 }`}
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -499,15 +529,17 @@ export const KioskPage: React.FC = () => {
 
               {/* Caption Pill */}
               <div 
-                className={`px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full border text-[11px] sm:text-xs flex items-center gap-2 shadow-xs transition-colors ${
+                className={`px-3.5 py-1.5 rounded-full border text-[11px] sm:text-xs flex items-center gap-2 shadow-sm transition-colors ${
                   isDark 
-                    ? 'bg-[#23201C]/85 border-[#423B33] text-[#FBF8F2]' 
-                    : 'bg-[#FBF8F2]/90 border-[#DED3C2] text-[#29251F]'
+                    ? 'bg-[#23201C] border-[#423B33] text-[#FBF8F2]' 
+                    : 'bg-white border-[#D5C7B2] text-[#29251F]'
                 }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-[#B96535] shrink-0" />
                 <span className="font-serif font-bold tracking-wide">{activeSlide.title}</span>
-                <span className="opacity-55 text-[10px] font-mono shrink-0">({activeSlide.yearContext})</span>
+                <span className={`text-[10px] font-mono shrink-0 ${isDark ? 'text-[#C89B3C]' : 'text-[#713F2B]'}`}>
+                  ({activeSlide.yearContext})
+                </span>
               </div>
 
               {/* Unobtrusive Next Slide Button */}
@@ -517,8 +549,8 @@ export const KioskPage: React.FC = () => {
                 aria-label="Next slide"
                 className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center transition-all cursor-pointer active:scale-95 shadow-xs ${
                   isDark 
-                    ? 'bg-[#23201C]/80 hover:bg-[#363028] border-white/10 text-stone-300' 
-                    : 'bg-[#FBF8F2]/90 hover:bg-white border-[#DED3C2] text-stone-700'
+                    ? 'bg-[#23201C] hover:bg-[#363028] border-[#423B33] text-stone-200' 
+                    : 'bg-white hover:bg-stone-50 border-[#D5C7B2] text-stone-800'
                 }`}
               >
                 <ChevronRight className="w-4 h-4" />
@@ -537,8 +569,8 @@ export const KioskPage: React.FC = () => {
           aria-label="Kiosk Exhibition Controls"
           className={`hidden lg:flex shrink-0 w-14 sm:w-16 lg:w-[4.25rem] flex-col items-center justify-between py-3.5 sm:py-4 px-1 rounded-2xl sm:rounded-3xl border-2 shadow-xl backdrop-blur-xl transition-all duration-700 z-40 my-auto ${
             isDark 
-              ? 'bg-[#23201C]/90 border-[#DED3C2]/20' 
-              : 'bg-[#FBF8F2]/95 border-[#DED3C2]'
+              ? 'bg-[#23201C] border-[#423B33]' 
+              : 'bg-white border-[#D5C7B2]'
           }`} 
           style={{ maxHeight: 'calc(100vh - 44px)' }}
         >
@@ -567,7 +599,9 @@ export const KioskPage: React.FC = () => {
               className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex flex-col items-center justify-center transition-all cursor-pointer ${
                 narrationVoiceActive
                   ? 'bg-[#B96535] text-white shadow-xs'
-                  : 'bg-black/5 dark:bg-white/10 text-stone-700 dark:text-stone-300 hover:bg-[#B96535]/15'
+                  : isDark 
+                    ? 'bg-white/10 text-stone-200 hover:bg-[#B96535]/20' 
+                    : 'bg-black/5 text-stone-700 hover:bg-[#B96535]/15'
               }`}
               title={narrationVoiceActive ? 'Voice Guide: Active' : 'Voice Guide: Muted'}
               aria-label={narrationVoiceActive ? 'Voice Guide Active' : 'Voice Guide Muted'}
@@ -598,8 +632,8 @@ export const KioskPage: React.FC = () => {
                 aria-checked={selectedLanguage === lang.code}
                 className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
                   selectedLanguage === lang.code
-                    ? 'bg-[#29251F] dark:bg-[#FBF8F2] text-[#FBF8F2] dark:text-[#29251F] shadow-xs'
-                    : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-100'
+                    ? isDark ? 'bg-[#FBF8F2] text-[#29251F] shadow-xs' : 'bg-[#29251F] text-[#FBF8F2] shadow-xs'
+                    : isDark ? 'text-stone-400 hover:text-stone-100' : 'text-stone-500 hover:text-stone-900'
                 }`}
                 title={`Language: ${lang.code}`}
                 aria-label={`Switch to ${lang.code}`}
