@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ARCHIVE_CATEGORIES } from '../data/categories';
 import { useDevice } from '../context/DeviceContext';
 import { useToast } from '../context/ToastContext';
+import { KioskBackground, type KioskSlide } from '../components/kiosk/KioskBackground';
 import { 
   Search, BookOpen, Clock, Bot, Volume2, VolumeX, Globe, 
   RotateCcw, ArrowRight, ShieldCheck, Home, ArrowLeft, LogOut, Check 
@@ -21,6 +22,9 @@ export const KioskPage: React.FC = () => {
 
   const [kioskSearch, setKioskSearch] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState<'English' | 'मराठी' | 'हिन्दी'>('English');
+  const [activeSlide, setActiveSlide] = useState<KioskSlide | null>(null);
+
+  const isDark = activeSlide?.isDarkTheme ?? false;
 
   useEffect(() => {
     // Automatically set device mode to kiosk when on /kiosk route
@@ -47,19 +51,28 @@ export const KioskPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5EBDD] text-[#29251F] flex flex-col justify-between p-6 sm:p-10 kiosk-mode selection:bg-transparent">
+    <div className={`min-h-screen relative flex flex-col justify-between p-6 sm:p-10 kiosk-mode selection:bg-transparent overflow-hidden transition-colors duration-1000 ${
+      isDark ? 'text-[#FBF8F2]' : 'text-[#29251F]'
+    }`}>
       
+      {/* Dynamic Adaptive Kiosk Background with Ambedkar Slideshow & Panoramic Audience */}
+      <KioskBackground onSlideChange={setActiveSlide} />
+
       {/* Kiosk Top Bar with Exit and Inactivity Reset */}
-      <div className="flex items-center justify-between gap-4 pb-6 border-b-2 border-[#DED3C2]">
+      <div className={`relative z-20 flex items-center justify-between gap-4 pb-5 px-6 py-4 rounded-3xl border-2 transition-all duration-700 shadow-sm ${
+        isDark 
+          ? 'bg-[#23201C]/80 backdrop-blur-md border-[#DED3C2]/25' 
+          : 'bg-[#FBF8F2]/90 backdrop-blur-md border-[#DED3C2]'
+      }`}>
         
         {/* Archival Seal & Welcome Badge */}
         <div className="flex items-center gap-4">
-          <img src="/seal.svg" alt="Seal" className="w-14 h-14" />
+          <img src="/seal.svg" alt="Seal" className="w-12 h-12" />
           <div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-[#29251F]">
+            <h1 className={`font-serif text-xl sm:text-2xl font-bold tracking-tight ${isDark ? 'text-[#FBF8F2]' : 'text-[#29251F]'}`}>
               AMBEDKAR ATLAS
             </h1>
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#B96535]">
+            <span className={`text-[11px] font-semibold uppercase tracking-widest block ${isDark ? 'text-[#C89B3C]' : 'text-[#B96535]'}`}>
               Public Interactive Exhibition Kiosk
             </span>
           </div>
@@ -75,13 +88,13 @@ export const KioskPage: React.FC = () => {
               showToast(narrationVoiceActive ? 'Voice assistance muted' : 'Voice assistance activated', 'info');
               resetInactivityTimer();
             }}
-            className={`flex items-center gap-2 px-4 py-3 rounded-2xl border text-sm font-semibold transition-all ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-sm font-semibold transition-all ${
               narrationVoiceActive
                 ? 'bg-[#B96535] text-white border-[#B96535] shadow-md'
                 : 'bg-[#FBF8F2] text-[#51483F] border-[#DED3C2]'
             }`}
           >
-            {narrationVoiceActive ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+            {narrationVoiceActive ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             <span className="hidden sm:inline">Voice Guide: {narrationVoiceActive ? 'ON' : 'OFF'}</span>
           </button>
 
@@ -91,7 +104,7 @@ export const KioskPage: React.FC = () => {
               <button
                 key={lang}
                 onClick={() => handleLanguageChange(lang)}
-                className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors ${
+                className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors ${
                   selectedLanguage === lang
                     ? 'bg-[#29251F] text-[#FBF8F2]'
                     : 'text-[#827567] hover:text-[#29251F]'
@@ -105,7 +118,7 @@ export const KioskPage: React.FC = () => {
           {/* Exit Kiosk Button */}
           <button
             onClick={handleExitKiosk}
-            className="flex items-center gap-1.5 px-4 py-3 bg-[#E7D5B9] hover:bg-[#DED3C2] text-[#713F2B] text-xs sm:text-sm font-bold rounded-2xl border border-[#DED3C2] transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-[#E7D5B9] hover:bg-[#DED3C2] text-[#713F2B] text-xs sm:text-sm font-bold rounded-2xl border border-[#DED3C2] transition-colors"
             title="Exit Kiosk Mode and return to Desktop"
           >
             <LogOut className="w-4 h-4" />
@@ -117,22 +130,28 @@ export const KioskPage: React.FC = () => {
       </div>
 
       {/* Main Touch Hero and Search */}
-      <div className="my-auto py-8 max-w-4xl mx-auto w-full text-center space-y-8">
+      <div className="relative z-20 my-auto py-6 max-w-4xl mx-auto w-full text-center space-y-6">
         
         <div>
-          <span className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-[#B96535] block mb-2">
+          <span className={`text-xs sm:text-sm font-semibold uppercase tracking-widest block mb-2 ${
+            isDark ? 'text-[#C89B3C]' : 'text-[#B96535]'
+          }`}>
             Touch to Begin Exploration
           </span>
-          <h2 className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold text-[#29251F] leading-tight">
+          <h2 className={`font-serif text-4xl sm:text-5xl md:text-6xl font-bold leading-tight ${
+            isDark ? 'text-[#FBF8F2] drop-shadow-md' : 'text-[#29251F]'
+          }`}>
             Discover the Heritage of <br />
             Dr. B. R. Ambedkar
           </h2>
-          <p className="text-base sm:text-lg text-[#51483F] mt-3 max-w-2xl mx-auto leading-relaxed">
+          <p className={`text-base sm:text-lg mt-3 max-w-2xl mx-auto leading-relaxed ${
+            isDark ? 'text-[#E7D5B9]' : 'text-[#51483F]'
+          }`}>
             Touch any collection tile below to browse original manuscripts, historical audio, and constitutional debates.
           </p>
         </div>
 
-        {/* Large Prominent Touch Search */}
+        {/* Large Prominent Touch Search with Glassmorphism */}
         <form onSubmit={handleKioskSearchSubmit} className="max-w-2xl mx-auto">
           <div className="relative flex items-center">
             <input
@@ -143,19 +162,19 @@ export const KioskPage: React.FC = () => {
                 resetInactivityTimer();
               }}
               placeholder="Touch here to search speeches, writings, or historical dates..."
-              className="w-full pl-14 pr-32 py-5 text-base sm:text-lg bg-[#FFF] border-2 border-[#DED3C2] rounded-3xl text-[#29251F] placeholder-[#827567] focus:outline-none focus:border-[#B96535] shadow-lg"
+              className="w-full pl-14 pr-32 py-5 text-base sm:text-lg bg-[#FBF8F2]/95 backdrop-blur-md border-2 border-[#DED3C2] focus:border-[#B96535] rounded-3xl text-[#29251F] placeholder-[#827567] focus:outline-none shadow-xl transition-all"
             />
             <Search className="w-7 h-7 text-[#827567] absolute left-5 pointer-events-none" />
             <button
               type="submit"
-              className="absolute right-3 px-6 py-3 bg-[#B96535] hover:bg-[#713F2B] text-white font-bold rounded-2xl text-base shadow-sm"
+              className="absolute right-3 px-6 py-3 bg-[#B96535] hover:bg-[#713F2B] text-white font-bold rounded-2xl text-base shadow-sm transition-colors"
             >
               Search
             </button>
           </div>
         </form>
 
-        {/* Touch-First Category Tiles (Massive tap targets) */}
+        {/* Touch-First Category Tiles (Glassmorphic tap targets) */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 text-left">
           
           <div
@@ -163,7 +182,7 @@ export const KioskPage: React.FC = () => {
               navigate('/archive?category=writings');
               resetInactivityTimer();
             }}
-            className="bg-[#FBF8F2] border-2 border-[#DED3C2] hover:border-[#B96535] rounded-3xl p-6 transition-all hover:scale-[1.02] cursor-pointer shadow-sm active:scale-95 space-y-3"
+            className="bg-[#FBF8F2]/92 backdrop-blur-md border-2 border-[#DED3C2] hover:border-[#B96535] rounded-3xl p-6 transition-all hover:scale-[1.02] cursor-pointer shadow-md active:scale-95 space-y-3"
           >
             <div className="w-12 h-12 rounded-2xl bg-[#E7D5B9] flex items-center justify-center text-[#713F2B]">
               <BookOpen className="w-6 h-6" />
@@ -179,7 +198,7 @@ export const KioskPage: React.FC = () => {
               navigate('/archive?category=speeches');
               resetInactivityTimer();
             }}
-            className="bg-[#FBF8F2] border-2 border-[#DED3C2] hover:border-[#B96535] rounded-3xl p-6 transition-all hover:scale-[1.02] cursor-pointer shadow-sm active:scale-95 space-y-3"
+            className="bg-[#FBF8F2]/92 backdrop-blur-md border-2 border-[#DED3C2] hover:border-[#B96535] rounded-3xl p-6 transition-all hover:scale-[1.02] cursor-pointer shadow-md active:scale-95 space-y-3"
           >
             <div className="w-12 h-12 rounded-2xl bg-[#E7D5B9] flex items-center justify-center text-[#713F2B]">
               <Volume2 className="w-6 h-6" />
@@ -195,7 +214,7 @@ export const KioskPage: React.FC = () => {
               navigate('/timeline');
               resetInactivityTimer();
             }}
-            className="bg-[#FBF8F2] border-2 border-[#DED3C2] hover:border-[#B96535] rounded-3xl p-6 transition-all hover:scale-[1.02] cursor-pointer shadow-sm active:scale-95 space-y-3"
+            className="bg-[#FBF8F2]/92 backdrop-blur-md border-2 border-[#DED3C2] hover:border-[#B96535] rounded-3xl p-6 transition-all hover:scale-[1.02] cursor-pointer shadow-md active:scale-95 space-y-3"
           >
             <div className="w-12 h-12 rounded-2xl bg-[#E7D5B9] flex items-center justify-center text-[#713F2B]">
               <Clock className="w-6 h-6" />
@@ -211,7 +230,7 @@ export const KioskPage: React.FC = () => {
               navigate('/research');
               resetInactivityTimer();
             }}
-            className="bg-[#FBF8F2] border-2 border-[#DED3C2] hover:border-[#B96535] rounded-3xl p-6 transition-all hover:scale-[1.02] cursor-pointer shadow-sm active:scale-95 space-y-3"
+            className="bg-[#FBF8F2]/92 backdrop-blur-md border-2 border-[#DED3C2] hover:border-[#B96535] rounded-3xl p-6 transition-all hover:scale-[1.02] cursor-pointer shadow-md active:scale-95 space-y-3"
           >
             <div className="w-12 h-12 rounded-2xl bg-[#E7D5B9] flex items-center justify-center text-[#713F2B]">
               <Bot className="w-6 h-6" />
@@ -227,21 +246,25 @@ export const KioskPage: React.FC = () => {
       </div>
 
       {/* Kiosk Bottom Status Bar with Inactivity Counter */}
-      <div className="pt-6 border-t border-[#DED3C2] flex flex-wrap items-center justify-between gap-4 text-xs text-[#827567]">
+      <div className={`relative z-20 pt-4 px-6 py-3 rounded-2xl border flex flex-wrap items-center justify-between gap-4 text-xs transition-colors duration-700 shadow-sm ${
+        isDark
+          ? 'bg-[#23201C]/80 backdrop-blur-md border-[#DED3C2]/20 text-[#E7D5B9]'
+          : 'bg-[#FBF8F2]/90 backdrop-blur-md border-[#DED3C2] text-[#827567]'
+      }`}>
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#FBF8F2] hover:bg-[#E7D5B9] text-[#29251F] font-semibold rounded-xl border border-[#DED3C2]"
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#FBF8F2] hover:bg-[#E7D5B9] text-[#29251F] font-semibold rounded-xl border border-[#DED3C2] transition-colors"
           >
             <Home className="w-4 h-4 text-[#B96535]" />
             <span>Exhibition Home</span>
           </button>
-          <span>Touchscreen optimized • High contrast mode</span>
+          <span>Touchscreen exhibition mode • Adaptive archival themes</span>
         </div>
 
-        <div className="flex items-center gap-2 bg-[#FBF8F2] px-3.5 py-1.5 rounded-full border border-[#DED3C2]">
+        <div className="flex items-center gap-2 bg-[#FBF8F2] text-[#29251F] px-3.5 py-1.5 rounded-full border border-[#DED3C2]">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Session Auto-Reset: {inactivityCountdown} seconds</span>
+          <span>Session Auto-Reset: {inactivityCountdown}s</span>
           <button
             onClick={resetInactivityTimer}
             className="text-[#B96535] font-semibold underline ml-1"

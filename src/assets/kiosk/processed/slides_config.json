@@ -1,0 +1,62 @@
+[
+  {
+    "id": "portrait-book",
+    "src": "src/assets/kiosk/slides/slide_portrait.jpg",
+    "title": "The Presiding Scholar",
+    "subtitle": "Framed with manuscript and pen, New Delhi (1950)",
+    "ambientBg": "#F5EBDD",
+    "ambientGlow": "rgba(185, 101, 53, 0.18)",
+    "tint": "sepia-warm",
+    "assetPath": "../assets/kiosk/processed/slide-portrait-book.webp"
+  },
+  {
+    "id": "library-study",
+    "src": "src/assets/kiosk/slides/slide_pinterest.jpg",
+    "title": "Midnight in the Library",
+    "subtitle": "A lifetime dedicated to reading and scholarship",
+    "ambientBg": "#23201C",
+    "ambientGlow": "rgba(200, 155, 60, 0.22)",
+    "tint": "monochrome-warm",
+    "assetPath": "../assets/kiosk/processed/slide-library-study.webp"
+  },
+  {
+    "id": "statue-pointing",
+    "src": "src/assets/kiosk/slides/slide_statue_pointing.jpg",
+    "title": "Voice of Liberation",
+    "subtitle": "Statue with Constitutional volume pointing toward justice",
+    "ambientBg": "#EFE4D3",
+    "ambientGlow": "rgba(113, 63, 43, 0.18)",
+    "tint": "terracotta-warm",
+    "assetPath": "../assets/kiosk/processed/slide-statue-pointing.webp"
+  },
+  {
+    "id": "bronze-constitution",
+    "src": "src/assets/kiosk/slides/slide_britannica.jpg",
+    "title": "The Living Constitution",
+    "subtitle": "Monumental bronze sculpture, Parliament House",
+    "ambientBg": "#EFE6D8",
+    "ambientGlow": "rgba(200, 155, 60, 0.20)",
+    "tint": "bronze-gold",
+    "assetPath": "../assets/kiosk/processed/slide-bronze-constitution.webp"
+  },
+  {
+    "id": "parliament-monument",
+    "src": "src/assets/kiosk/slides/slide_freepik.jpg",
+    "title": "Architect of the Republic",
+    "subtitle": "Standing tall in civic remembrance",
+    "ambientBg": "#F3ECE0",
+    "ambientGlow": "rgba(185, 101, 53, 0.15)",
+    "tint": "warm-daylight",
+    "assetPath": "../assets/kiosk/processed/slide-parliament-monument.webp"
+  },
+  {
+    "id": "heritage-bronze",
+    "src": "src/assets/kiosk/slides/slide_indiamart.png",
+    "title": "Beacon of Equality",
+    "subtitle": "The historic Constitution bearer memorial",
+    "ambientBg": "#ECE2D2",
+    "ambientGlow": "rgba(113, 63, 43, 0.16)",
+    "tint": "weathered-bronze",
+    "assetPath": "../assets/kiosk/processed/slide-heritage-bronze.webp"
+  }
+]
