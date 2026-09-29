@@ -155,58 +155,10 @@ export const TimelinePage: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // In 3D Book Mode, make the book the immediate visual focus resting on the wooden background
-  if (timelineViewMode === '3d-book') {
-    return (
-      <div className="w-full min-h-screen">
-        {allEvents.length > 0 ? (
-          <Historical3DBook
-            events={allEvents}
-            selectedYear={activeJumpYear}
-            onSelectEvent={handleSelectEvent}
-            onToggleViewMode={setTimelineViewMode}
-            viewMode={timelineViewMode}
-          />
-        ) : (
-          <div
-            className="w-full h-screen flex flex-col items-center justify-center select-none"
-            style={{
-              backgroundImage: `radial-gradient(ellipse at 50% 50%, rgba(18,12,8,0.2) 0%, rgba(10,6,4,0.62) 100%), url('https://i.pinimg.com/736x/db/57/c4/db57c43bb1b847a6547f7fa37c3802da.jpg'), url('/wood-texture.jpg')`,
-              backgroundColor: '#24160E',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          >
-            <div className="w-10 h-10 rounded-full border-2 border-[#D4AF37] border-t-transparent animate-spin" />
-          </div>
-        )}
-
-        {/* Floating Return to Top Button */}
-        {showScrollTop && (
-          <button
-            onClick={scrollToTop}
-            className="fixed bottom-8 right-8 z-40 p-3 bg-[#1A120B]/90 text-[#FBF8F2] hover:bg-[#B96535] rounded-full shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center border border-white/20 cursor-pointer backdrop-blur-md"
-            title="Return to top of timeline"
-            aria-label="Scroll to top"
-          >
-            <ArrowUp className="w-5 h-5" />
-          </button>
-        )}
-
-        {/* Event Detail Modal with Full Provenance */}
-        <EventDetailModal
-          event={activeModalEvent}
-          onClose={() => setActiveModalEvent(null)}
-          relatedRecords={relatedRecords}
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       
-      {/* Archival Track Header & Mode Switcher */}
+      {/* Editorial Header Banner */}
       <div className="border-b border-[#DED3C2] pb-6 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -224,15 +176,23 @@ export const TimelinePage: React.FC = () => {
             <button
               type="button"
               onClick={() => setTimelineViewMode('3d-book')}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer text-[#51483F] hover:text-[#29251F]"
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                timelineViewMode === '3d-book'
+                  ? 'bg-[#B96535] text-white shadow-xs'
+                  : 'text-[#51483F] hover:text-[#29251F]'
+              }`}
             >
-              <BookOpen className="w-3.5 h-3.5 text-[#B96535]" />
-              <span>3D Book Mode</span>
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>3D Book of Ambedkar</span>
             </button>
             <button
               type="button"
               onClick={() => setTimelineViewMode('list')}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer bg-[#713F2B] text-white shadow-xs"
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                timelineViewMode === 'list'
+                  ? 'bg-[#713F2B] text-white shadow-xs'
+                  : 'text-[#51483F] hover:text-[#29251F]'
+              }`}
             >
               <Layers className="w-3.5 h-3.5" />
               <span>Archival Track</span>
@@ -241,10 +201,10 @@ export const TimelinePage: React.FC = () => {
         </div>
 
         <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-[#29251F] tracking-tight">
-          Archival Chronology &amp; Records
+          The Book of Ambedkar
         </h1>
         <p className="text-sm sm:text-base text-[#51483F] max-w-3xl leading-relaxed">
-          Filter and examine 65 years of authenticated milestones (1891–1956) with detailed documentary citations, primary source references, and connected official MEA volumes.
+          Traverse 65 years of Dr. B. R. Ambedkar’s life and constitutional legacy (1891–1956) in an interactive 3D historical volume. Scroll to turn the pages, examine authentic photographs and archival citations, or navigate milestones directly.
         </p>
       </div>
 
@@ -394,12 +354,20 @@ export const TimelinePage: React.FC = () => {
 
       </div>
 
-      {/* Archival Linear Milestone Track */}
-      <TimelineTrack
-        events={filteredEvents}
-        selectedEvent={activeModalEvent}
-        onSelectEvent={handleSelectEvent}
-      />
+      {/* 3D Historical Book Mode (Primary) OR Traditional Linear Track */}
+      {timelineViewMode === '3d-book' && filteredEvents.length > 0 ? (
+        <Historical3DBook
+          events={filteredEvents}
+          selectedYear={activeJumpYear}
+          onSelectEvent={handleSelectEvent}
+        />
+      ) : (
+        <TimelineTrack
+          events={filteredEvents}
+          selectedEvent={activeModalEvent}
+          onSelectEvent={handleSelectEvent}
+        />
+      )}
 
       {/* Floating Return to Top Button */}
       {showScrollTop && (
