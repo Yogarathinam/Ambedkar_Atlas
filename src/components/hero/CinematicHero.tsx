@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, ArrowRight, BookOpen, Clock, Mic, MicOff } from 'lucide-react';
 import { HERO_ASSETS } from '../../assets/hero/heroAssets';
 import { useVoiceSearch } from '../../hooks/useVoiceSearch';
+import { HistoricalTimelineTrail } from './HistoricalTimelineTrail';
 
 export const CinematicHero: React.FC = () => {
   const navigate = useNavigate();
@@ -60,6 +61,9 @@ export const CinematicHero: React.FC = () => {
 
       {/* Background Decorative Archival Colonnade Lines (Subtle) */}
       <div className="absolute top-0 right-0 w-1/2 h-full opacity-15 pointer-events-none bg-[radial-gradient(#713F2B_1px,transparent_1px)] [background-size:24px_24px] z-0" />
+
+      {/* Decorative Continuous Historical Timeline Trail & Floating Milestone Cards */}
+      <HistoricalTimelineTrail hasVisited={hasVisited} />
 
       {/* Layer 1: Crowd SVG Background (Subtle ambient looped sway) */}
       <motion.div
@@ -155,33 +159,6 @@ export const CinematicHero: React.FC = () => {
             <Clock className="w-3.5 h-3.5 text-[#713F2B] group-hover:scale-110 transition-transform" />
             <span>Explore Timeline</span>
           </button>
-        </div>
-
-        {/* Museum Leader / Trail Lines Connecting Down to Dr. Ambedkar */}
-        <div className="relative pl-6 pt-2 hidden lg:flex flex-col items-start pointer-events-none select-none">
-          <svg width="150" height="95" viewBox="0 0 150 95" fill="none" className="overflow-visible">
-            {/* Trail Line Path */}
-            <path
-              d="M 12 0 L 12 24 L 58 56 L 58 90"
-              stroke="#B96535"
-              strokeWidth="1.5"
-              strokeDasharray="4 3"
-              strokeOpacity="0.85"
-            />
-            {/* Junction Nodes */}
-            <circle cx="12" cy="0" r="2.5" fill="#713F2B" />
-            <circle cx="12" cy="24" r="2.5" fill="#B96535" />
-            <circle cx="58" cy="56" r="2.5" fill="#713F2B" />
-            
-            {/* Terminal Target Ring directly above Ambedkar's silhouette */}
-            <circle cx="58" cy="90" r="5" stroke="#B96535" strokeWidth="1.5" fill="#F5EBDD" />
-            <circle cx="58" cy="90" r="2" fill="#B96535" />
-          </svg>
-
-          {/* Archival metadata tag alongside trail line */}
-          <div className="absolute left-20 top-12 text-[10px] font-mono tracking-widest uppercase text-[#713F2B] bg-[#FBF8F2]/90 px-2 py-0.5 rounded-full border border-[#DED3C2] shadow-xs">
-            Primary Figure • 1891–1956
-          </div>
         </div>
       </motion.div>
 
