@@ -185,7 +185,7 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
     >
       {/* Pinned Sticky Museum Stage */}
       <div
-        className="sticky top-14 h-[calc(100vh-3.5rem)] w-full flex flex-col justify-between p-3 sm:p-5 lg:p-7 overflow-hidden z-20 rounded-3xl transition-all duration-300"
+        className="sticky top-16 h-[calc(100vh-4.75rem)] max-h-[860px] w-full flex flex-col justify-between px-3 sm:px-6 py-2 overflow-hidden z-20 rounded-3xl transition-all duration-300"
         style={currentSpreadIndex === 0 ? {
           backgroundImage: `radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%), url('https://i.pinimg.com/736x/db/57/c4/db57c43bb1b847a6547f7fa37c3802da.jpg'), url('/wood-texture.jpg')`,
           backgroundColor: '#24160E',
@@ -212,14 +212,14 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
         {/* ============================================================ */}
         {/* 3D BOOK STAGE (Centrally positioned with surrounding space)  */}
         {/* ============================================================ */}
-        <div className="relative w-full my-auto flex items-center justify-center py-2 sm:py-4">
+        <div className="relative w-full flex-1 min-h-0 flex items-center justify-center py-1">
           
           {/* Ambient Museum Under-Book Drop Shadow */}
-          <div className="absolute w-[92%] sm:w-[88%] lg:w-[82%] max-w-5xl h-16 sm:h-20 -bottom-8 rounded-[50%] bg-black/35 blur-2xl pointer-events-none" />
+          <div className="absolute w-[92%] sm:w-[88%] lg:w-[82%] max-w-5xl h-8 sm:h-12 -bottom-2 rounded-[50%] bg-black/40 blur-xl pointer-events-none" />
 
-          {/* 3D Perspective Viewport */}
+          {/* 3D Perspective Viewport (Dynamically responsive to fit viewport without cutting off bottom) */}
           <div
-            className="relative w-full max-w-5xl h-[460px] sm:h-[520px] md:h-[580px] lg:h-[620px] transition-transform duration-300 select-none"
+            className="relative w-full max-w-5xl h-full max-h-[480px] lg:max-h-[520px] transition-transform duration-300 select-none"
             style={{
               perspective: '2500px',
               perspectiveOrigin: '50% 50%',
@@ -259,7 +259,7 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
                 {/* When cover is completely closed */}
                 {currentSpreadIndex === 0 && (
                   <div
-                    className="w-full h-full flex flex-col items-center justify-center p-8 text-center space-y-4 rounded-xl"
+                    className="w-full h-full flex flex-col items-center justify-center p-4 sm:p-6 text-center space-y-3 rounded-xl"
                     style={{
                       backgroundImage: `radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.7) 100%), url('https://i.pinimg.com/736x/db/57/c4/db57c43bb1b847a6547f7fa37c3802da.jpg'), url('/wood-texture.jpg')`,
                       backgroundColor: '#24160E',
@@ -270,10 +270,10 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
                     <img
                       src={ambedkarLogo}
                       alt="Dr. B. R. Ambedkar"
-                      className="w-24 h-24 object-contain drop-shadow-md"
+                      className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md"
                     />
                     <div className="space-y-1">
-                      <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                      <h3 className="font-serif text-xl sm:text-2xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
                         The Book of Ambedkar
                       </h3>
                       <p className="text-xs text-white/90 max-w-sm drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
@@ -297,19 +297,19 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
                 {currentSpreadIndex > totalSpreads && (
                   <div className="w-full h-full flex flex-col md:flex-row select-text font-serif">
                     {/* Left Colophon Page */}
-                    <div className="w-full md:w-1/2 h-full bg-[#FAF4EA] border-r border-[#DED3C2] p-8 lg:p-12 flex flex-col justify-between text-center relative">
+                    <div className="w-full md:w-1/2 h-full bg-[#FAF4EA] border-r border-[#DED3C2] p-4 sm:p-6 lg:p-8 flex flex-col justify-between text-center relative">
                       <div className="text-[10px] font-mono tracking-widest text-[#827567] uppercase">
                         Colophon &amp; Testament
                       </div>
                       
-                      <div className="space-y-4 max-w-sm mx-auto my-auto">
-                        <div className="w-16 h-16 mx-auto rounded-full bg-[#E7D5B9] border border-[#DED3C2] flex items-center justify-center">
-                          <ShieldCheck className="w-8 h-8 text-[#B96535]" />
+                      <div className="space-y-3 max-w-sm mx-auto my-auto">
+                        <div className="w-12 h-12 mx-auto rounded-full bg-[#E7D5B9] border border-[#DED3C2] flex items-center justify-center">
+                          <ShieldCheck className="w-6 h-6 text-[#B96535]" />
                         </div>
-                        <h3 className="font-serif text-2xl font-bold text-[#29251F]">
+                        <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#29251F]">
                           "Educate. Agitate. Organise."
                         </h3>
-                        <p className="text-xs text-[#51483F] leading-relaxed italic">
+                        <p className="text-xs text-[#51483F] leading-relaxed italic line-clamp-3">
                           "History shows that where ethics and economics come in conflict, victory is always with economics. Vested interests have never been known to have divested themselves unless there was sufficient force to compel them."
                         </p>
                         <span className="text-[11px] font-mono text-[#713F2B] font-bold block">
@@ -323,7 +323,7 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
                     </div>
 
                     {/* Right Colophon Page */}
-                    <div className="w-full md:w-1/2 h-full bg-[#FAF4EA] p-8 lg:p-12 flex flex-col justify-between text-center relative">
+                    <div className="w-full md:w-1/2 h-full bg-[#FAF4EA] p-4 sm:p-6 lg:p-8 flex flex-col justify-between text-center relative">
                       <div className="text-[10px] font-mono tracking-widest text-[#827567] uppercase">
                         Eternal Memorial
                       </div>
@@ -379,7 +379,7 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
                 >
                   {/* Front of Turning Leaf (Current Recto page peeling away) */}
                   <div
-                    className="absolute inset-0 rounded-r-xl overflow-hidden bg-[#FAF4EA] border border-[#DED3C2] shadow-2xl p-6 lg:p-8 flex flex-col justify-between"
+                    className="absolute inset-0 rounded-r-xl overflow-hidden bg-[#FAF4EA] border border-[#DED3C2] shadow-2xl p-4 sm:p-6 flex flex-col justify-between"
                     style={{
                       backfaceVisibility: 'hidden',
                     }}
@@ -396,14 +396,14 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
                       <span>The Ambedkar Chronicle</span>
                       <span>Milestone {currentSpreadIndex}</span>
                     </div>
-                    <div className="my-auto space-y-2 text-left">
+                    <div className="my-auto space-y-1.5 text-left">
                       <span className="text-xs font-mono font-bold text-[#713F2B] bg-[#E7D5B9] px-2 py-0.5 rounded">
                         {currentEvent?.exactDate || currentEvent?.year}
                       </span>
-                      <h4 className="font-serif text-xl font-bold text-[#29251F]">
+                      <h4 className="font-serif text-lg font-bold text-[#29251F] line-clamp-1">
                         {currentEvent?.title}
                       </h4>
-                      <p className="text-xs text-[#51483F] line-clamp-4">
+                      <p className="text-xs text-[#51483F] line-clamp-3">
                         {currentEvent?.summary}
                       </p>
                     </div>
@@ -414,7 +414,7 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
 
                   {/* Back of Turning Leaf (Next Verso page revealed on the left) */}
                   <div
-                    className="absolute inset-0 rounded-l-xl overflow-hidden bg-[#FAF4EA] border border-[#DED3C2] shadow-2xl p-6 lg:p-8 flex flex-col justify-between text-left"
+                    className="absolute inset-0 rounded-l-xl overflow-hidden bg-[#FAF4EA] border border-[#DED3C2] shadow-2xl p-4 sm:p-6 flex flex-col justify-between text-left"
                     style={{
                       transform: 'rotateY(180deg)',
                       backfaceVisibility: 'hidden',
@@ -431,11 +431,11 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
                       <span>Ambedkar Chronicle</span>
                       <span>Milestone {currentSpreadIndex + 1}</span>
                     </div>
-                    <div className="my-auto space-y-2">
+                    <div className="my-auto space-y-1.5">
                       <span className="text-xs font-mono font-bold text-[#B96535]">
                         {nextEvent?.exactDate || nextEvent?.year}
                       </span>
-                      <h4 className="font-serif text-xl font-bold text-[#29251F]">
+                      <h4 className="font-serif text-lg font-bold text-[#29251F] line-clamp-1">
                         {nextEvent?.title}
                       </h4>
                       <p className="text-xs text-[#51483F] line-clamp-3">
@@ -454,15 +454,16 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
         </div>
 
         {/* Bottom Museum Indicator & Scroll Hint */}
-        <div className="flex items-center justify-between px-3 py-1.5 text-[11px] font-mono text-[#827567] border-t border-[#DED3C2]/60">
+        <div className="flex items-center justify-between px-3 py-1 text-[11px] font-mono text-[#827567] border-t border-[#DED3C2]/60 shrink-0">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>Interactive 3D Book Mode • Scroll down or drag to turn pages</span>
+            <span className="hidden sm:inline">Interactive 3D Book Mode • </span>
+            <span>Scroll down or drag to turn pages</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span>Scroll Progress:</span>
-            <div className="w-24 h-1.5 bg-[#DED3C2] rounded-full overflow-hidden">
+            <span className="hidden sm:inline">Scroll:</span>
+            <div className="w-16 sm:w-24 h-1.5 bg-[#DED3C2] rounded-full overflow-hidden">
               <div
                 className="h-full bg-[#B96535] rounded-full transition-all duration-75"
                 style={{ width: `${Math.round(scrollProgress * 100)}%` }}

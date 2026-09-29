@@ -42,10 +42,10 @@ export const BookControls: React.FC<BookControlsProps> = ({
   const activeEvent = !isCover && !isColophon ? events[currentSpreadIndex - 1] : null;
 
   return (
-    <div className="w-full space-y-3 pointer-events-auto">
+    <div className="w-full space-y-1.5 pointer-events-auto shrink-0">
       
       {/* Top Floating Museum HUD Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-[#1A120B]/85 backdrop-blur-xl border border-white/15 shadow-[0_8px_30px_rgba(0,0,0,0.4)] text-xs text-[#F5EBDD]">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-2xl bg-[#1A120B]/85 backdrop-blur-xl border border-white/15 shadow-[0_8px_30px_rgba(0,0,0,0.4)] text-xs text-[#F5EBDD]">
         
         {/* Left: Current State Indicator */}
         <div className="flex items-center gap-2 sm:gap-3">
@@ -139,7 +139,7 @@ export const BookControls: React.FC<BookControlsProps> = ({
       </div>
 
       {/* Milestone Year Scrubber Bar (Direct Jump) */}
-      <div className="bg-[#1A120B]/85 backdrop-blur-md border border-white/10 rounded-2xl px-3 py-2 flex items-center gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-white/20 shadow-2xs">
+      <div className="bg-[#1A120B]/85 backdrop-blur-md border border-white/10 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-thin scrollbar-thumb-white/20 shadow-2xs">
         <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#D4AF37] shrink-0 flex items-center gap-1">
           <Calendar className="w-3 h-3 text-[#D4AF37]" />
           <span>Milestones:</span>

@@ -57,10 +57,10 @@ export const BookCover: React.FC<BookCoverProps> = ({
         </div>
 
         {/* Cover Content Centerpiece */}
-        <div className="relative h-full flex flex-col items-center justify-between p-7 sm:p-9 text-center z-10">
+        <div className="relative h-full flex flex-col items-center justify-between p-4 sm:p-6 lg:p-7 text-center z-10">
           
           {/* Header Epoch Inscription */}
-          <div className="space-y-1 pt-2">
+          <div className="space-y-1 pt-1">
             <span className="text-[10px] sm:text-[11px] font-mono tracking-[0.28em] text-[#D4AF37]/80 uppercase block">
               Historical Documentary Chronicle
             </span>
@@ -68,9 +68,9 @@ export const BookCover: React.FC<BookCoverProps> = ({
           </div>
 
           {/* Central Title & Insignia Medallion */}
-          <div className="space-y-5 my-auto">
+          <div className="space-y-3 sm:space-y-4 my-auto">
             {/* Medallion with Archival Seal & Ambedkar Portrait */}
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto flex items-center justify-center">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 mx-auto flex items-center justify-center">
               {/* Outer Gilded Aura Ring */}
               <div className="absolute inset-0 rounded-full border-2 border-[#D4AF37]/70 shadow-[0_0_15px_rgba(212,175,55,0.25)]" />
               <div className="absolute inset-1.5 rounded-full border border-[#D4AF37]/40 border-dashed animate-[spin_60s_linear_infinite]" />
@@ -79,26 +79,26 @@ export const BookCover: React.FC<BookCoverProps> = ({
               <img
                 src="/seal.svg"
                 alt="Ambedkar Atlas Seal"
-                className="w-16 h-16 sm:w-18 sm:h-18 invert brightness-90 opacity-60"
+                className="w-12 h-12 sm:w-16 sm:h-16 invert brightness-90 opacity-60"
               />
               
               {/* Raw Dr. Ambedkar Portrait on top */}
               <img
                 src={ambedkarLogo}
                 alt="Dr. B. R. Ambedkar"
-                className="absolute inset-1.5 w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md"
+                className="absolute inset-1.5 w-12 h-12 sm:w-16 sm:h-16 object-contain drop-shadow-md"
               />
             </div>
 
             {/* Book Title with Realistic Gold Foil Shimmer */}
-            <div className="space-y-2">
-              <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-wide uppercase leading-tight bg-gradient-to-b from-[#FFF4D0] via-[#E5C158] to-[#9E782F] bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+            <div className="space-y-1.5">
+              <h2 className="font-serif text-xl sm:text-2xl md:text-3xl font-extrabold tracking-wide uppercase leading-tight bg-gradient-to-b from-[#FFF4D0] via-[#E5C158] to-[#9E782F] bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 THE AMBEDKAR<br />CHRONICLE
               </h2>
               
-              <div className="w-24 h-[1.5px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mx-auto" />
+              <div className="w-20 h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mx-auto" />
               
-              <p className="font-serif italic text-xs sm:text-sm text-[#F5EBDD]/90 max-w-[280px] sm:max-w-xs mx-auto leading-relaxed tracking-wide">
+              <p className="font-serif italic text-xs sm:text-sm text-[#F5EBDD]/90 max-w-[260px] sm:max-w-xs mx-auto leading-relaxed tracking-wide">
                 The Life, Ideas &amp; Legacy of<br />Dr. B. R. Ambedkar
               </p>
             </div>
@@ -141,27 +141,27 @@ export const BookCover: React.FC<BookCoverProps> = ({
         <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/25 via-black/10 to-transparent pointer-events-none" />
 
         {/* Frontispiece / Dedication Plate */}
-        <div className="h-full flex flex-col justify-between p-6 sm:p-8 text-center relative z-10">
-          <div className="pt-2 text-right">
+        <div className="h-full flex flex-col justify-between p-4 sm:p-6 text-center relative z-10">
+          <div className="pt-1 text-right">
             <span className="text-[10px] font-mono tracking-widest text-[#827567] uppercase">
               Frontispiece
             </span>
           </div>
 
-          <div className="space-y-4 my-auto max-w-xs mx-auto">
-            <div className="w-12 h-12 mx-auto rounded-full bg-[#E7D5B9] border border-[#DED3C2] flex items-center justify-center">
-              <span className="font-serif text-lg font-bold text-[#713F2B]">Ω</span>
+          <div className="space-y-2.5 my-auto max-w-xs mx-auto">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto rounded-full bg-[#E7D5B9] border border-[#DED3C2] flex items-center justify-center">
+              <span className="font-serif text-base sm:text-lg font-bold text-[#713F2B]">Ω</span>
             </div>
 
-            <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#29251F] leading-snug">
+            <h3 className="font-serif text-lg sm:text-xl font-bold text-[#29251F] leading-snug">
               "Tell the slave he is a slave and he will revolt."
             </h3>
 
-            <p className="text-xs sm:text-sm text-[#51483F] leading-relaxed italic">
+            <p className="text-xs text-[#51483F] leading-relaxed italic line-clamp-3">
               Dedicated to the ongoing struggle for social democracy, human dignity, and constitutional liberty.
             </p>
 
-            <div className="pt-2">
+            <div className="pt-1">
               <span className="text-[11px] font-serif font-bold text-[#713F2B] block">
                 Babasaheb Dr. B. R. Ambedkar
               </span>
@@ -171,7 +171,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
             </div>
           </div>
 
-          <div className="pb-1 border-t border-[#DED3C2] pt-3 text-[10px] text-[#827567] flex items-center justify-between font-mono">
+          <div className="pb-1 border-t border-[#DED3C2] pt-2 text-[10px] text-[#827567] flex items-center justify-between font-mono">
             <span>Ambedkar Atlas Edition</span>
             <span>Vol. I – XXIV</span>
           </div>
