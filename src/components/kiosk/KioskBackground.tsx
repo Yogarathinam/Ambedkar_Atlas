@@ -111,8 +111,8 @@ export const KioskBackground: React.FC<KioskBackgroundProps> = ({ currentSlideIn
         }}
       />
 
-      {/* 2. Right-Aligned Presiding Ambedkar Slideshow (Safe distance away from left-hand touch text) */}
-      <div className="absolute right-0 top-16 bottom-16 w-full lg:w-[48%] xl:w-[44%] flex items-center justify-center lg:justify-end pr-4 lg:pr-10 pointer-events-none z-[5]">
+      {/* 2. Right-Center Presiding Ambedkar Slideshow (Positioned safely away from left touch UI and right vertical nav) */}
+      <div className="absolute right-20 sm:right-24 md:right-28 lg:right-32 top-8 bottom-12 w-[46%] sm:w-[44%] md:w-[40%] lg:w-[38%] flex items-center justify-center lg:justify-end pointer-events-none z-[5]">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide.id}
@@ -128,13 +128,13 @@ export const KioskBackground: React.FC<KioskBackgroundProps> = ({ currentSlideIn
             <img
               src={currentSlide.image}
               alt={currentSlide.title}
-              className="max-h-[82%] sm:max-h-[86%] w-auto max-w-full object-contain object-right-bottom filter drop-shadow-[0_18px_42px_rgba(41,37,31,0.22)]"
+              className="max-h-[80%] sm:max-h-[84%] w-auto max-w-full object-contain object-right-bottom filter drop-shadow-[0_18px_42px_rgba(41,37,31,0.22)]"
             />
             {/* Archival metadata caption pill under slide */}
-            <div className="mt-3 px-3.5 py-1 rounded-full bg-black/20 dark:bg-white/10 backdrop-blur-md border border-white/20 text-[11px] text-stone-800 dark:text-stone-200 font-serif flex items-center gap-2">
+            <div className="mt-2.5 px-3 py-1 rounded-full bg-black/20 dark:bg-white/10 backdrop-blur-md border border-white/20 text-[10px] sm:text-[11px] text-stone-800 dark:text-stone-200 font-serif flex items-center gap-1.5 shadow-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-[#B96535]" />
               <span>{currentSlide.title}</span>
-              <span className="opacity-60 text-[10px] font-mono">({currentSlide.yearContext})</span>
+              <span className="opacity-60 text-[9px] font-mono">({currentSlide.yearContext})</span>
             </div>
           </motion.div>
         </AnimatePresence>
@@ -161,7 +161,7 @@ export const KioskBackground: React.FC<KioskBackgroundProps> = ({ currentSlideIn
           <img
             src={crowdPanoramaWebp}
             alt="Historical Gathering Audience Panorama"
-            className="w-full h-auto min-h-[120px] sm:min-h-[160px] md:min-h-[200px] max-h-[24vh] object-cover object-bottom opacity-90 select-none filter contrast-105"
+            className="w-full h-auto min-h-[100px] sm:min-h-[140px] md:min-h-[170px] max-h-[18vh] object-cover object-bottom opacity-85 select-none filter contrast-105"
           />
         </div>
       </motion.div>
