@@ -144,10 +144,10 @@ export const CinematicHero: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: animDuration, delay: staggerDelay, ease: 'easeOut' }}
       >
-        <div className="flex items-center gap-2.5 bg-[#FBF8F2]/90 backdrop-blur-xs p-2 rounded-2xl border border-[#DED3C2] shadow-xs">
+        <div className="flex items-center gap-2.5 bg-white/70 backdrop-blur-xl backdrop-saturate-150 p-2 rounded-2xl border border-white/80 shadow-[0_10px_30px_rgba(41,37,31,0.08),inset_0_1px_1px_rgba(255,255,255,0.9)]">
           <button
             onClick={() => navigate('/archive')}
-            className="px-4 py-2 bg-[#29251F] hover:bg-[#3E3830] text-[#FBF8F2] text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-xs flex items-center gap-2 group cursor-pointer"
+            className="px-4 py-2 bg-[#29251F]/90 hover:bg-[#29251F] text-[#FBF8F2] text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-xs flex items-center gap-2 group cursor-pointer"
           >
             <BookOpen className="w-3.5 h-3.5 text-[#B96535] group-hover:scale-110 transition-transform" />
             <span>Explore Archive</span>
@@ -155,7 +155,7 @@ export const CinematicHero: React.FC = () => {
 
           <button
             onClick={() => navigate('/timeline')}
-            className="px-4 py-2 bg-[#E7D5B9]/90 hover:bg-[#E7D5B9] text-[#29251F] text-xs sm:text-sm font-semibold rounded-xl transition-all border border-[#DED3C2] flex items-center gap-2 group cursor-pointer"
+            className="px-4 py-2 bg-white/80 hover:bg-white text-[#29251F] text-xs sm:text-sm font-semibold rounded-xl transition-all border border-white/80 shadow-2xs flex items-center gap-2 group cursor-pointer"
           >
             <Clock className="w-3.5 h-3.5 text-[#713F2B] group-hover:scale-110 transition-transform" />
             <span>Explore Timeline</span>
@@ -163,46 +163,50 @@ export const CinematicHero: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* MAIN HERO CARD: Perfectly placed and fully visible on both Mobile and Desktop */}
+      {/* MAIN HERO CARD: Elegant glassmorphic card with reduced concise text and optical frosted sheen */}
       <motion.div
-        className="w-full max-w-xl mx-auto lg:mx-0 lg:absolute lg:top-8 lg:right-10 xl:right-14 z-30 text-left space-y-4 p-5 sm:p-7 rounded-3xl bg-[#FBF8F2]/95 backdrop-blur-md border-2 border-[#DED3C2] shadow-[0_12px_36px_rgba(41,37,31,0.08)] my-auto"
+        className="relative w-full max-w-xl mx-auto lg:mx-0 lg:absolute lg:top-8 lg:right-10 xl:right-14 z-30 text-left space-y-4 p-5 sm:p-7 rounded-3xl bg-white/70 backdrop-blur-xl backdrop-saturate-150 border border-white/80 shadow-[0_20px_50px_rgba(41,37,31,0.12),inset_0_1px_1px_0_rgba(255,255,255,0.9),inset_0_0_0_1px_rgba(222,211,194,0.35)] my-auto overflow-hidden transition-all"
         initial={hasVisited ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: animDuration, delay: staggerDelay * 1.5, ease: 'easeOut' }}
       >
+        {/* Subtle Frosted Glass Reflection & Sheen */}
+        <div className="absolute -top-24 -right-24 w-60 h-60 bg-gradient-to-br from-white/70 via-white/20 to-transparent rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-gradient-to-tr from-[#B96535]/10 via-[#E7D5B9]/25 to-transparent rounded-full blur-2xl pointer-events-none" />
+
         {/* Eyebrow badge */}
-        <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-[#B96535] text-white">
+        <div className="flex items-center gap-2 relative z-10">
+          <span className="px-3 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-[#B96535]/90 text-white shadow-2xs backdrop-blur-xs">
             Digital Heritage Archive
           </span>
-          <span className="text-[11px] text-[#713F2B] font-semibold flex items-center gap-1">
+          <span className="text-[11px] text-[#713F2B] font-semibold flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/60 border border-white/80 backdrop-blur-md shadow-2xs">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             <span>Official MEA Repository</span>
           </span>
         </div>
 
         {/* Main Heading */}
-        <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-[2.65rem] font-bold text-[#29251F] tracking-tight leading-[1.14]">
+        <h1 className="relative z-10 font-serif text-2xl sm:text-3xl md:text-4xl lg:text-[2.65rem] font-bold text-[#29251F] tracking-tight leading-[1.14]">
           Architect of Equality. <br />
           <span className="text-[#B96535]">Voice of the Republic.</span>
         </h1>
 
-        {/* Readable Description */}
-        <p className="text-xs sm:text-sm md:text-base text-[#51483F] leading-relaxed font-normal">
-          Explore the official books, writings, and constitutional legacy of Dr. B. R. Ambedkar through an authenticated national digital archive with 60 verified PDF documents.
+        {/* Concise Description (Reduced text amount) */}
+        <p className="relative z-10 text-xs sm:text-sm md:text-base text-[#51483F] leading-relaxed font-normal">
+          Explore Dr. B. R. Ambedkar's writings, speeches, and constitutional legacy across 60 verified national volumes.
         </p>
 
-        {/* Search Bar: Mobile-friendly with adaptive padding & button sizing */}
-        <form onSubmit={handleSearchSubmit} className="pt-1">
-          <div className="relative flex items-center">
+        {/* Search Bar: Frosted glass search input container */}
+        <form onSubmit={handleSearchSubmit} className="pt-1 relative z-10">
+          <div className="relative flex items-center group/search">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search treatises, speeches, volumes..."
-              className="w-full pl-9 sm:pl-11 pr-24 sm:pr-36 py-2.5 sm:py-3 text-xs sm:text-sm bg-[#FFFDF9] border border-[#DED3C2] focus:border-[#B96535] rounded-xl text-[#29251F] placeholder-[#827567] focus:outline-none shadow-2xs transition-all"
+              className="w-full pl-9 sm:pl-11 pr-24 sm:pr-36 py-2.5 sm:py-3 text-xs sm:text-sm bg-white/80 hover:bg-white/95 focus:bg-white border border-white/90 focus:border-[#B96535]/80 rounded-xl text-[#29251F] placeholder-[#827567] focus:outline-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.03),0_2px_8px_rgba(41,37,31,0.04)] backdrop-blur-md transition-all"
             />
-            <Search className="w-4 h-4 sm:w-5 sm:h-5 text-[#827567] absolute left-3 pointer-events-none" />
+            <Search className="w-4 h-4 sm:w-5 sm:h-5 text-[#827567] absolute left-3 pointer-events-none group-focus-within/search:text-[#B96535] transition-colors" />
 
             <div className="absolute right-1.5 sm:right-2 flex items-center gap-1 sm:gap-1.5">
               {/* Voice Search Microphone Button */}
@@ -223,7 +227,7 @@ export const CinematicHero: React.FC = () => {
 
               <button
                 type="submit"
-                className="px-3 py-1.5 sm:px-3.5 sm:py-2 bg-[#B96535] hover:bg-[#713F2B] text-white text-xs sm:text-sm font-semibold rounded-lg transition-colors flex items-center gap-1 shadow-xs cursor-pointer"
+                className="px-3.5 py-1.5 sm:px-4 sm:py-2 bg-[#B96535] hover:bg-[#713F2B] text-white text-xs sm:text-sm font-semibold rounded-lg transition-all flex items-center gap-1 shadow-xs hover:shadow-sm cursor-pointer"
               >
                 <span>Explore</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -233,10 +237,10 @@ export const CinematicHero: React.FC = () => {
         </form>
 
         {/* Mobile & Tablet Quick Actions (Visible on small screens, integrated seamlessly) */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 lg:hidden border-t border-[#DED3C2]/70 text-xs">
+        <div className="flex flex-wrap items-center gap-2 pt-2 lg:hidden border-t border-white/60 text-xs relative z-10">
           <button
             onClick={() => navigate('/archive')}
-            className="flex-1 py-2 px-3 bg-[#29251F] hover:bg-[#3E3830] text-[#FBF8F2] font-semibold rounded-xl text-center flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+            className="flex-1 py-2 px-3 bg-[#29251F]/90 hover:bg-[#29251F] text-[#FBF8F2] font-semibold rounded-xl text-center flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs backdrop-blur-sm"
           >
             <BookOpen className="w-3.5 h-3.5 text-[#B96535]" />
             <span>Official Archive</span>
@@ -244,7 +248,7 @@ export const CinematicHero: React.FC = () => {
 
           <button
             onClick={() => navigate('/timeline')}
-            className="flex-1 py-2 px-3 bg-[#E7D5B9] hover:bg-[#DED3C2] text-[#713F2B] font-semibold rounded-xl text-center flex items-center justify-center gap-1.5 transition-colors border border-[#DED3C2] cursor-pointer"
+            className="flex-1 py-2 px-3 bg-white/70 hover:bg-white/90 text-[#713F2B] font-semibold rounded-xl text-center flex items-center justify-center gap-1.5 transition-colors border border-white/80 cursor-pointer shadow-xs backdrop-blur-sm"
           >
             <Clock className="w-3.5 h-3.5 text-[#B96535]" />
             <span>Timeline</span>
