@@ -255,7 +255,7 @@ export const KioskPage: React.FC = () => {
         {/* ========================================================================= */}
         {/* AREA A: Left Exhibition Workspace (~45-50% width on large screens)        */}
         {/* ========================================================================= */}
-        <main className="w-full lg:w-[48%] xl:w-[46%] flex flex-col justify-center space-y-3 sm:space-y-4 lg:space-y-4.5 xl:space-y-5 my-auto pl-1 sm:pl-2 lg:pl-3 min-h-0 z-20">
+        <main className="w-full lg:w-[50%] xl:w-[48%] flex flex-col justify-center space-y-3 sm:space-y-4 lg:space-y-4.5 xl:space-y-5 my-auto pl-1 sm:pl-2 lg:pl-3 min-h-0 z-20">
           
           {/* Exhibition Plaque Label */}
           <div className="flex items-center gap-2">
@@ -283,7 +283,7 @@ export const KioskPage: React.FC = () => {
             </h1>
             
             {/* Description */}
-            <p className={`text-xs sm:text-sm mt-1.5 sm:mt-2 max-w-lg leading-relaxed ${
+            <p className={`text-xs sm:text-sm mt-1.5 sm:mt-2 max-w-xl lg:max-w-2xl leading-relaxed ${
               isDark ? 'text-[#D5C9B8]' : 'text-[#51483F]'
             }`}>
               {content.description}
@@ -291,33 +291,33 @@ export const KioskPage: React.FC = () => {
           </div>
 
           {/* Prominent Wide Touch Search Bar */}
-          <form onSubmit={handleKioskSearchSubmit} className="w-full max-w-lg pt-0.5">
+          <form onSubmit={handleKioskSearchSubmit} className="w-full max-w-xl lg:max-w-2xl pt-0.5">
             <div className={`relative flex items-center rounded-xl sm:rounded-2xl border-2 transition-all shadow-sm ${
               isDark 
                 ? 'bg-[#23201C]/95 border-[#51483F] focus-within:border-[#C89B3C]' 
                 : 'bg-[#FBF8F2]/95 border-[#DED3C2] focus-within:border-[#B96535]'
             }`}>
-              <Search className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#827567] dark:text-[#A89C8F] absolute left-3.5 sm:left-4 pointer-events-none" />
+              <Search className="w-4 h-4 sm:w-5 sm:h-5 text-[#827567] dark:text-[#A89C8F] absolute left-3.5 sm:left-4 pointer-events-none shrink-0" />
               
               <input
                 type="text"
                 value={kioskSearch}
                 onChange={(e) => setKioskSearch(e.target.value)}
                 placeholder={content.searchPlaceholder}
-                className="w-full pl-10 sm:pl-11 pr-24 sm:pr-28 py-2.5 sm:py-3 text-xs sm:text-sm bg-transparent rounded-xl sm:rounded-2xl text-[#29251F] dark:text-[#FBF8F2] placeholder-[#827567] dark:placeholder-[#A89C8F] focus:outline-none"
+                className="w-full pl-10 sm:pl-12 pr-24 sm:pr-28 py-2.5 sm:py-3.5 text-xs sm:text-sm bg-transparent rounded-xl sm:rounded-2xl text-[#29251F] dark:text-[#FBF8F2] placeholder-[#827567] dark:placeholder-[#A89C8F] focus:outline-none"
               />
               
               <button
                 type="submit"
-                className="absolute right-1.5 sm:right-2 px-3.5 sm:px-5 py-1.5 sm:py-2 bg-[#B96535] hover:bg-[#713F2B] active:scale-95 text-white font-medium rounded-lg sm:rounded-xl text-xs sm:text-sm shadow-xs transition-all cursor-pointer"
+                className="absolute right-1.5 sm:right-2 px-4 sm:px-5 py-1.5 sm:py-2.5 bg-[#B96535] hover:bg-[#713F2B] active:scale-95 text-white font-medium rounded-lg sm:rounded-xl text-xs sm:text-sm shadow-xs transition-all cursor-pointer shrink-0"
               >
                 {content.searchBtn}
               </button>
             </div>
           </form>
 
-          {/* Four Primary Exhibition Categories (2x2 Balanced Touch Grid) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 lg:gap-3 max-w-lg pt-0.5">
+          {/* Four Primary Exhibition Categories (2x2 Balanced Touch Grid, Equal Heights, No Truncation) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 w-full max-w-xl lg:max-w-2xl pt-0.5">
             
             {/* Tile 1: Writings & Books */}
             <div
@@ -329,22 +329,22 @@ export const KioskPage: React.FC = () => {
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && navigate('/archive?category=writings')}
               aria-label={content.categories.writingsTitle}
-              className={`rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 border-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] flex items-center gap-3 ${
+              className={`rounded-xl sm:rounded-2xl p-3 sm:p-3.5 lg:p-4 border-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] flex items-center gap-3 sm:gap-3.5 min-h-[76px] sm:min-h-[84px] h-full ${
                 isDark 
                   ? 'bg-[#23201C]/90 hover:bg-[#2A2621] border-[#423B33] hover:border-[#C89B3C]' 
                   : 'bg-[#FBF8F2]/95 hover:bg-white border-[#DED3C2] hover:border-[#B96535]'
               }`}
             >
-              <div className={`w-9 h-9 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
+              <div className={`w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
                 isDark ? 'bg-[#363028] text-[#C89B3C]' : 'bg-[#E7D5B9]/70 text-[#713F2B]'
               }`}>
-                <BookOpen className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+                <BookOpen className="w-5 h-5" />
               </div>
-              <div className="overflow-hidden">
+              <div className="min-w-0 flex-1">
                 <h2 className="font-serif text-sm sm:text-base font-bold text-[#29251F] dark:text-[#FBF8F2] leading-tight">
                   {content.categories.writingsTitle}
                 </h2>
-                <p className="text-[11px] sm:text-xs text-[#51483F]/80 dark:text-[#A89C8F] truncate mt-0.5">
+                <p className="text-[11px] sm:text-xs text-[#51483F] dark:text-[#D5C9B8] leading-snug mt-1">
                   {content.categories.writingsDesc}
                 </p>
               </div>
@@ -360,22 +360,22 @@ export const KioskPage: React.FC = () => {
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && navigate('/archive?category=speeches')}
               aria-label={content.categories.speechesTitle}
-              className={`rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 border-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] flex items-center gap-3 ${
+              className={`rounded-xl sm:rounded-2xl p-3 sm:p-3.5 lg:p-4 border-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] flex items-center gap-3 sm:gap-3.5 min-h-[76px] sm:min-h-[84px] h-full ${
                 isDark 
                   ? 'bg-[#23201C]/90 hover:bg-[#2A2621] border-[#423B33] hover:border-[#C89B3C]' 
                   : 'bg-[#FBF8F2]/95 hover:bg-white border-[#DED3C2] hover:border-[#B96535]'
               }`}
             >
-              <div className={`w-9 h-9 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
+              <div className={`w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
                 isDark ? 'bg-[#363028] text-[#C89B3C]' : 'bg-[#E7D5B9]/70 text-[#713F2B]'
               }`}>
-                <Volume2 className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+                <Volume2 className="w-5 h-5" />
               </div>
-              <div className="overflow-hidden">
+              <div className="min-w-0 flex-1">
                 <h2 className="font-serif text-sm sm:text-base font-bold text-[#29251F] dark:text-[#FBF8F2] leading-tight">
                   {content.categories.speechesTitle}
                 </h2>
-                <p className="text-[11px] sm:text-xs text-[#51483F]/80 dark:text-[#A89C8F] truncate mt-0.5">
+                <p className="text-[11px] sm:text-xs text-[#51483F] dark:text-[#D5C9B8] leading-snug mt-1">
                   {content.categories.speechesDesc}
                 </p>
               </div>
@@ -391,22 +391,22 @@ export const KioskPage: React.FC = () => {
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && navigate('/timeline')}
               aria-label={content.categories.timelineTitle}
-              className={`rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 border-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] flex items-center gap-3 ${
+              className={`rounded-xl sm:rounded-2xl p-3 sm:p-3.5 lg:p-4 border-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] flex items-center gap-3 sm:gap-3.5 min-h-[76px] sm:min-h-[84px] h-full ${
                 isDark 
                   ? 'bg-[#23201C]/90 hover:bg-[#2A2621] border-[#423B33] hover:border-[#C89B3C]' 
                   : 'bg-[#FBF8F2]/95 hover:bg-white border-[#DED3C2] hover:border-[#B96535]'
               }`}
             >
-              <div className={`w-9 h-9 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
+              <div className={`w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
                 isDark ? 'bg-[#363028] text-[#C89B3C]' : 'bg-[#E7D5B9]/70 text-[#713F2B]'
               }`}>
-                <Clock className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+                <Clock className="w-5 h-5" />
               </div>
-              <div className="overflow-hidden">
+              <div className="min-w-0 flex-1">
                 <h2 className="font-serif text-sm sm:text-base font-bold text-[#29251F] dark:text-[#FBF8F2] leading-tight">
                   {content.categories.timelineTitle}
                 </h2>
-                <p className="text-[11px] sm:text-xs text-[#51483F]/80 dark:text-[#A89C8F] truncate mt-0.5">
+                <p className="text-[11px] sm:text-xs text-[#51483F] dark:text-[#D5C9B8] leading-snug mt-1">
                   {content.categories.timelineDesc}
                 </p>
               </div>
@@ -422,22 +422,22 @@ export const KioskPage: React.FC = () => {
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && navigate('/research')}
               aria-label={content.categories.researchTitle}
-              className={`rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 border-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] flex items-center gap-3 ${
+              className={`rounded-xl sm:rounded-2xl p-3 sm:p-3.5 lg:p-4 border-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] flex items-center gap-3 sm:gap-3.5 min-h-[76px] sm:min-h-[84px] h-full ${
                 isDark 
                   ? 'bg-[#23201C]/90 hover:bg-[#2A2621] border-[#423B33] hover:border-[#C89B3C]' 
                   : 'bg-[#FBF8F2]/95 hover:bg-white border-[#DED3C2] hover:border-[#B96535]'
               }`}
             >
-              <div className={`w-9 h-9 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
+              <div className={`w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
                 isDark ? 'bg-[#363028] text-[#C89B3C]' : 'bg-[#E7D5B9]/70 text-[#713F2B]'
               }`}>
-                <Bot className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+                <Bot className="w-5 h-5" />
               </div>
-              <div className="overflow-hidden">
+              <div className="min-w-0 flex-1">
                 <h2 className="font-serif text-sm sm:text-base font-bold text-[#29251F] dark:text-[#FBF8F2] leading-tight">
                   {content.categories.researchTitle}
                 </h2>
-                <p className="text-[11px] sm:text-xs text-[#51483F]/80 dark:text-[#A89C8F] truncate mt-0.5">
+                <p className="text-[11px] sm:text-xs text-[#51483F] dark:text-[#D5C9B8] leading-snug mt-1">
                   {content.categories.researchDesc}
                 </p>
               </div>
