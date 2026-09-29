@@ -4,7 +4,7 @@ import {
   FileText, BookOpen, Search, ZoomIn, ZoomOut, Maximize2, 
   ChevronLeft, ChevronRight, ExternalLink, Globe, Copy, Check, 
   RotateCcw, ListFilter, AlertCircle, Sparkles, Download, ArrowUpRight,
-  ArrowRight, ArrowUp, AlignLeft, BookMarked
+  ArrowRight, ArrowUp, AlignLeft, BookMarked, Languages
 } from 'lucide-react';
 import { MeaVolumeRecord, ExtractedPage } from '../../data/mea/ingestedVolumes';
 import { EIGHTH_SCHEDULE_LANGUAGES } from '../../data/indianLanguages';
@@ -58,7 +58,10 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
   const [langDropdownOpen, setLangDropdownOpen] = useState<boolean>(false);
   const [langSearch, setLangSearch] = useState<string>('');
   const [isTranslating, setIsTranslating] = useState<boolean>(false);
+  const [translationProgress, setTranslationProgress] = useState<string>('');
   const [translationResult, setTranslationResult] = useState<TranslationResult | null>(null);
+  const [translatedPages, setTranslatedPages] = useState<Record<number, string>>({});
+  const [showTranslatedText, setShowTranslatedText] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
 
   const { showToast } = useToast();
@@ -84,10 +87,25 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
     }
   }, [urlQuery]);
 
-  // Reset translation when page changes
+  // Find current active TOC chapter for context and fallback
+  const activeTocChapter = useMemo(() => {
+    if (!volume.tableOfContents || volume.tableOfContents.length === 0) return null;
+    return (
+      volume.tableOfContents.find((item, idx) => {
+        const nextItem = volume.tableOfContents[idx + 1];
+        const endPage = item.endPage || (nextItem ? nextItem.startPage - 1 : totalPages);
+        return currentPage >= item.startPage && currentPage <= endPage;
+      }) || volume.tableOfContents[0]
+    );
+  }, [volume.tableOfContents, currentPage, totalPages]);
+
+  // Reset translation when language or chapter changes
   useEffect(() => {
+    setTranslatedPages({});
     setTranslationResult(null);
-  }, [currentPage]);
+    setShowTranslatedText(false);
+    setTranslationProgress('');
+  }, [selectedLangCode, activeTocChapter?.title]);
 
   const handlePageChange = (newPage: number) => {
     const validPage = Math.max(1, Math.min(totalPages, newPage));
@@ -109,18 +127,6 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
       setPageInput(`${currentPage}`);
     }
   };
-
-  // Find current active TOC chapter for context and fallback
-  const activeTocChapter = useMemo(() => {
-    if (!volume.tableOfContents || volume.tableOfContents.length === 0) return null;
-    return (
-      volume.tableOfContents.find((item, idx) => {
-        const nextItem = volume.tableOfContents[idx + 1];
-        const endPage = item.endPage || (nextItem ? nextItem.startPage - 1 : totalPages);
-        return currentPage >= item.startPage && currentPage <= endPage;
-      }) || volume.tableOfContents[0]
-    );
-  }, [volume.tableOfContents, currentPage, totalPages]);
 
   // All extracted pages belonging to current active chapter
   const activeChapterPages = useMemo(() => {
@@ -207,25 +213,65 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
   }, [docSearchQuery, volume]);
 
   // Translation handler
-  const handleTranslatePage = async () => {
-    const textToTranslate = extractedPageData?.text || volume.description;
-    if (!textToTranslate) return;
+  const handleTranslatePage = async (pageToTranslate?: ExtractedPage) => {
+    const targetPage = pageToTranslate || extractedPageData || activeChapterPages[0];
+    if (!targetPage?.text) return;
 
     setIsTranslating(true);
+    setTranslationProgress(`Translating Page ${targetPage.pdfPageNumber}...`);
     setLangDropdownOpen(false);
 
     try {
       const result = await translationService.translateText(
-        textToTranslate,
+        targetPage.text,
         selectedLangCode,
-        { volumeTitle: volume.title, pageNumber: currentPage }
+        { volumeTitle: volume.title, pageNumber: targetPage.pdfPageNumber }
       );
+      setTranslatedPages((prev) => ({
+        ...prev,
+        [targetPage.pdfPageNumber]: result.translatedText,
+      }));
       setTranslationResult(result);
-      showToast(`Page translated to ${result.language.name} (${result.language.nativeName})`, 'success');
+      setShowTranslatedText(true);
+      showToast(`Page ${targetPage.pdfPageNumber} translated to ${result.language.name}`, 'success');
     } catch {
       showToast('Could not complete translation. Reverting to original text.', 'warning');
     } finally {
       setIsTranslating(false);
+      setTranslationProgress('');
+    }
+  };
+
+  const handleTranslateChapter = async () => {
+    if (activeChapterPages.length === 0) return;
+
+    setIsTranslating(true);
+    setLangDropdownOpen(false);
+    setShowTranslatedText(true);
+
+    try {
+      for (let i = 0; i < activeChapterPages.length; i++) {
+        const page = activeChapterPages[i];
+        setTranslationProgress(`Translating page ${i + 1} of ${activeChapterPages.length} (p.${page.pdfPageNumber})...`);
+        const result = await translationService.translateText(
+          page.text,
+          selectedLangCode,
+          { volumeTitle: volume.title, pageNumber: page.pdfPageNumber }
+        );
+        setTranslatedPages((prev) => ({
+          ...prev,
+          [page.pdfPageNumber]: result.translatedText,
+        }));
+        if (i === 0) {
+          setTranslationResult(result);
+        }
+      }
+      showToast(`Chapter translated to ${selectedLangObj.name} (${activeChapterPages.length} pages)`, 'success');
+    } catch {
+      showToast('Completed partial translation of chapter.', 'info');
+    } finally {
+      setIsTranslating(false);
+      setTranslationProgress('');
     }
   };
 
@@ -844,55 +890,84 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
 
                     {/* Translate Page Button */}
                     <button
-                      onClick={handleTranslatePage}
+                      onClick={() => handleTranslatePage()}
                       disabled={isTranslating}
-                      className="flex items-center gap-1.5 px-4 py-1.5 bg-[#B96535] hover:bg-[#713F2B] text-white rounded-xl text-xs font-bold shadow-2xs transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#B96535] hover:bg-[#713F2B] text-white rounded-xl text-xs font-bold shadow-2xs transition-colors disabled:opacity-50"
+                      title={`Translate current page (${extractedPageData?.pdfPageNumber || currentPage}) into ${selectedLangObj.name}`}
                     >
                       {isTranslating ? (
                         <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <Sparkles className="w-3.5 h-3.5" />
                       )}
-                      <span>{isTranslating ? 'Translating...' : 'Translate'}</span>
+                      <span>
+                        {isTranslating
+                          ? (translationProgress || 'Translating...')
+                          : `Translate Page ${extractedPageData?.pdfPageNumber || currentPage}`}
+                      </span>
                     </button>
+
+                    {/* Translate Entire Chapter Button (in chapter mode) */}
+                    {readingMode === 'chapter' && activeChapterPages.length > 1 && (
+                      <button
+                        onClick={handleTranslateChapter}
+                        disabled={isTranslating}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#713F2B] hover:bg-[#512D1F] text-white rounded-xl text-xs font-bold shadow-2xs transition-colors disabled:opacity-50"
+                        title={`Translate all ${activeChapterPages.length} pages of chapter into ${selectedLangObj.name}`}
+                      >
+                        <Languages className="w-3.5 h-3.5" />
+                        <span>Translate All ({activeChapterPages.length} Pages)</span>
+                      </button>
+                    )}
                   </div>
 
                   {/* Copy & Reset Actions */}
                   <div className="flex items-center gap-2">
-                    {translationResult && (
+                    {/* Toggle original vs translated if any page has been translated */}
+                    {Object.keys(translatedPages).length > 0 && (
                       <button
-                        onClick={() => setTranslationResult(null)}
-                        className="flex items-center gap-1 text-xs text-[#713F2B] hover:underline"
-                        title="Show original extracted text"
+                        onClick={() => setShowTranslatedText(!showTranslatedText)}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white border border-[#DED3C2] hover:bg-[#F5EBDD] text-xs font-semibold text-[#713F2B] transition-colors"
+                        title="Toggle original English / Translation"
                       >
                         <RotateCcw className="w-3 h-3" />
-                        <span>Original Text</span>
+                        <span>{showTranslatedText ? 'Show Original English' : `Show ${selectedLangObj.name}`}</span>
                       </button>
                     )}
 
                     <button
-                      onClick={() => handleCopyText(translationResult ? translationResult.translatedText : (extractedPageData?.text || volume.description))}
+                      onClick={() => {
+                        if (readingMode === 'chapter') {
+                          handleCopyFullChapter();
+                        } else {
+                          const textToCopy = (showTranslatedText && translatedPages[currentPage])
+                            ? translatedPages[currentPage]
+                            : (extractedPageData?.text || volume.description);
+                          handleCopyText(textToCopy);
+                        }
+                      }}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white border border-[#DED3C2] hover:bg-[#F5EBDD] text-xs font-semibold text-[#29251F] transition-colors"
-                      title="Copy displayed page text"
+                      title="Copy text"
                     >
                       {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copied ? 'Copied' : 'Copy Page'}</span>
+                      <span>{copied ? 'Copied' : (readingMode === 'chapter' ? 'Copy Chapter' : 'Copy Page')}</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Translation Status Notice */}
-                {translationResult && (
-                  <div className="text-[11px] text-[#713F2B] bg-white p-2 rounded-xl border border-[#DED3C2] flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span>{translationResult.statusMessage}</span>
-                    </div>
-                    {translationResult.isMachineGenerated && (
-                      <span className="text-[10px] text-[#827567] font-mono uppercase tracking-wider">
-                        Machine Assisted
+                {showTranslatedText && (Object.keys(translatedPages).length > 0 || translationResult) && (
+                  <div className="text-[11px] text-[#713F2B] bg-white p-2.5 rounded-xl border border-[#DED3C2] flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="font-semibold">
+                        Displaying full neural translation in {selectedLangObj.name} ({selectedLangObj.nativeName})
+                        {Object.keys(translatedPages).length > 1 ? ` • ${Object.keys(translatedPages).length} pages translated` : ''}
                       </span>
-                    )}
+                    </div>
+                    <span className="text-[10px] text-[#827567] font-mono uppercase tracking-wider hidden sm:inline">
+                      100% Full Text • Neural Engine
+                    </span>
                   </div>
                 )}
               </div>
@@ -900,28 +975,12 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
               {/* Chapter Content Stream OR Single Page View */}
               {readingMode === 'chapter' && activeChapterPages.length > 0 ? (
                 <div className="space-y-6">
-                  {translationResult ? (
-                    <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#DED3C2] space-y-4">
-                      <div className="flex items-center justify-between pb-3 border-b border-[#DED3C2] text-xs text-[#827567]">
-                        <span className="font-bold text-[#713F2B]">
-                          Translated into {translationResult.language.name} ({translationResult.language.nativeName})
-                        </span>
-                        <button
-                          onClick={() => setTranslationResult(null)}
-                          className="text-[#B96535] hover:underline flex items-center gap-1 font-semibold"
-                        >
-                          <RotateCcw className="w-3 h-3" />
-                          <span>Show Original English</span>
-                        </button>
-                      </div>
-                      <div className="space-y-4 font-serif text-base sm:text-lg text-[#29251F] leading-relaxed">
-                        {translationResult.translatedText.split('\n\n').map((paragraph, idx) => (
-                          <p key={idx}>{paragraph}</p>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    activeChapterPages.map((page) => (
+                  {activeChapterPages.map((page) => {
+                    const isPageTranslated = Boolean(translatedPages[page.pdfPageNumber]);
+                    const showThisTranslated = showTranslatedText && isPageTranslated;
+                    const pageDisplayText = showThisTranslated ? translatedPages[page.pdfPageNumber] : page.text;
+
+                    return (
                       <article
                         key={page.pdfPageNumber}
                         id={`chapter-page-${page.pdfPageNumber}`}
@@ -941,9 +1000,42 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
                                 • {page.wordCount} words
                               </span>
                             )}
+                            {showThisTranslated && (
+                              <span className="px-2 py-0.5 rounded-full bg-[#E7D5B9] text-[#713F2B] text-[10px] font-bold">
+                                {selectedLangObj.name}
+                              </span>
+                            )}
                           </div>
 
                           <div className="flex items-center gap-2">
+                            {/* Individual Page Translation Toggle */}
+                            {isPageTranslated ? (
+                              <button
+                                type="button"
+                                onClick={() => setShowTranslatedText(!showTranslatedText)}
+                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-colors cursor-pointer ${
+                                  showThisTranslated
+                                    ? 'bg-[#B96535] text-white border-[#B96535]'
+                                    : 'bg-[#FAF4EA] text-[#713F2B] border-[#DED3C2]'
+                                }`}
+                                title={showThisTranslated ? 'Show original English' : `Show ${selectedLangObj.name} translation`}
+                              >
+                                <Languages className="w-3 h-3" />
+                                <span>{showThisTranslated ? 'Showing ' + selectedLangObj.name : 'Show ' + selectedLangObj.name}</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleTranslatePage(page)}
+                                disabled={isTranslating}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FAF4EA] hover:bg-[#E7D5B9] text-[#713F2B] rounded-lg border border-[#DED3C2] text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                                title={`Translate this page into ${selectedLangObj.name}`}
+                              >
+                                <Sparkles className="w-3 h-3 text-[#B96535]" />
+                                <span>Translate</span>
+                              </button>
+                            )}
+
                             <button
                               type="button"
                               onClick={() => {
@@ -960,7 +1052,7 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
 
                             <button
                               type="button"
-                              onClick={() => handleCopyText(page.text)}
+                              onClick={() => handleCopyText(pageDisplayText)}
                               className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FAF4EA] hover:bg-[#E7D5B9] text-[#51483F] rounded-lg border border-[#DED3C2] text-[11px] font-semibold transition-colors cursor-pointer"
                               title="Copy this page"
                             >
@@ -970,13 +1062,21 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
                           </div>
                         </div>
 
-                        {/* Extracted Verbatim Text */}
+                        {/* Extracted Verbatim Text / Translated Text */}
                         <div className="prose max-w-none text-[#29251F] leading-relaxed selection:bg-[#E7D5B9] font-serif text-base sm:text-lg">
-                          {renderHighlightedText(page.text)}
+                          {showThisTranslated ? (
+                            <div className="space-y-4">
+                              {pageDisplayText.split('\n\n').map((paragraph, pIdx) => (
+                                <p key={pIdx}>{paragraph}</p>
+                              ))}
+                            </div>
+                          ) : (
+                            renderHighlightedText(pageDisplayText)
+                          )}
                         </div>
                       </article>
-                    ))
-                  )}
+                    );
+                  })}
 
                   {/* End of Chapter Completion Card */}
                   <div className="bg-[#FAF4EA] border-2 border-[#DED3C2] rounded-3xl p-6 sm:p-8 text-center space-y-4">
@@ -1050,10 +1150,10 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
 
                   {/* The Actual Extracted Page Content */}
                   <article className="prose max-w-none text-[#29251F] leading-relaxed selection:bg-[#E7D5B9] bg-white p-6 sm:p-8 rounded-2xl border border-[#DED3C2]">
-                    {translationResult ? (
+                    {showTranslatedText && (translatedPages[currentPage] || translationResult?.translatedText) ? (
                       <div className="space-y-4">
-                        {translationResult.translatedText.split('\n\n').map((paragraph, idx) => (
-                          <p key={idx} className="leading-relaxed text-[#29251F] text-base sm:text-lg">
+                        {(translatedPages[currentPage] || translationResult!.translatedText).split('\n\n').map((paragraph, idx) => (
+                          <p key={idx} className="leading-relaxed text-[#29251F] text-base sm:text-lg font-serif">
                             {paragraph}
                           </p>
                         ))}
