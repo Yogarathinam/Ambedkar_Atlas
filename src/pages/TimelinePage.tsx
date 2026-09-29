@@ -4,6 +4,7 @@ import { TimelineEvent, ArchiveRecord, DateType } from '../types';
 import { archiveService } from '../services/archiveService';
 import { TimelineTrack } from '../components/timeline/TimelineTrack';
 import { EventDetailModal } from '../components/timeline/EventDetailModal';
+import { Historical3DBook } from '../components/timeline/book/Historical3DBook';
 import { useVoiceSearch } from '../hooks/useVoiceSearch';
 import { 
   Search, Mic, MicOff, Filter, RotateCcw, ArrowUp, 
@@ -46,6 +47,7 @@ export const TimelinePage: React.FC = () => {
   const [relatedRecords, setRelatedRecords] = useState<ArchiveRecord[]>([]);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [activeJumpYear, setActiveJumpYear] = useState<number | null>(null);
+  const [timelineViewMode, setTimelineViewMode] = useState<'3d-book' | 'list'>('3d-book');
 
   const { isListening, isSupported, startListening, stopListening } = useVoiceSearch();
   const yearNavRef = useRef<HTMLDivElement>(null);
@@ -158,21 +160,51 @@ export const TimelinePage: React.FC = () => {
       
       {/* Editorial Header Banner */}
       <div className="border-b border-[#DED3C2] pb-6 space-y-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-widest text-[#B96535]">
-            Verified Documentary Chronology • 1891–1956
-          </span>
-          <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200 flex items-center gap-1">
-            <ShieldCheck className="w-3 h-3 text-emerald-600" />
-            100% Source-Grounded Records
-          </span>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#B96535]">
+              Verified Documentary Chronology • 1891–1956
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200 flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+              100% Source-Grounded Records
+            </span>
+          </div>
+
+          {/* View Mode Switcher */}
+          <div className="flex items-center gap-1 bg-[#FAF4EA] p-1 rounded-xl border border-[#DED3C2]">
+            <button
+              type="button"
+              onClick={() => setTimelineViewMode('3d-book')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                timelineViewMode === '3d-book'
+                  ? 'bg-[#B96535] text-white shadow-xs'
+                  : 'text-[#51483F] hover:text-[#29251F]'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>3D Book of Ambedkar</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTimelineViewMode('list')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                timelineViewMode === 'list'
+                  ? 'bg-[#713F2B] text-white shadow-xs'
+                  : 'text-[#51483F] hover:text-[#29251F]'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Archival Track</span>
+            </button>
+          </div>
         </div>
 
         <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-[#29251F] tracking-tight">
-          A Life Dedicated to Human Liberty
+          The Book of Ambedkar
         </h1>
         <p className="text-sm sm:text-base text-[#51483F] max-w-3xl leading-relaxed">
-          Traverse the verified historical milestones of Dr. B. R. Ambedkar across six transformative epochs. Every event is sourced from official publications of <em>Dr. Babasaheb Ambedkar: Writings and Speeches</em>, <em>Constituent Assembly Debates</em>, and government archives.
+          Traverse 65 years of Dr. B. R. Ambedkar’s life and constitutional legacy (1891–1956) in an interactive 3D historical volume. Scroll to turn the pages, examine authentic photographs and archival citations, or navigate milestones directly.
         </p>
       </div>
 
@@ -322,12 +354,20 @@ export const TimelinePage: React.FC = () => {
 
       </div>
 
-      {/* Vertical Animated Timeline Track */}
-      <TimelineTrack
-        events={filteredEvents}
-        selectedEvent={activeModalEvent}
-        onSelectEvent={handleSelectEvent}
-      />
+      {/* 3D Historical Book Mode (Primary) OR Traditional Linear Track */}
+      {timelineViewMode === '3d-book' && filteredEvents.length > 0 ? (
+        <Historical3DBook
+          events={filteredEvents}
+          selectedYear={activeJumpYear}
+          onSelectEvent={handleSelectEvent}
+        />
+      ) : (
+        <TimelineTrack
+          events={filteredEvents}
+          selectedEvent={activeModalEvent}
+          onSelectEvent={handleSelectEvent}
+        />
+      )}
 
       {/* Floating Return to Top Button */}
       {showScrollTop && (
