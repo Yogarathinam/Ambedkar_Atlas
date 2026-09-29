@@ -52,7 +52,7 @@ export const CinematicHero: React.FC = () => {
     <section
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      className="relative min-h-[580px] sm:min-h-[640px] lg:min-h-[680px] overflow-hidden bg-[#F5EBDD] flex items-center paper-grain border-b border-[#DED3C2]"
+      className="relative min-h-[600px] sm:min-h-[660px] lg:min-h-[720px] overflow-hidden bg-[#F5EBDD] flex items-center paper-grain border-b border-[#DED3C2]"
       aria-label="Ambedkar Atlas Hero"
     >
       {/* Subtle Archival Ambient Lighting */}
@@ -63,7 +63,7 @@ export const CinematicHero: React.FC = () => {
 
       {/* Layer 1: Crowd SVG Background (Facing left towards Ambedkar) */}
       <motion.div
-        className="absolute bottom-0 right-0 w-full sm:w-[90%] md:w-[80%] lg:w-[72%] xl:w-[68%] h-[55%] sm:h-[65%] md:h-[72%] pointer-events-none z-10"
+        className="absolute bottom-0 right-0 w-full sm:w-[90%] md:w-[85%] lg:w-[78%] xl:w-[75%] h-[58%] sm:h-[68%] md:h-[75%] pointer-events-none z-10"
         initial={hasVisited ? { opacity: 0.9, y: 0 } : { opacity: 0, y: 25 }}
         animate={{ opacity: 0.95, y: 0 }}
         transition={{ duration: animDuration, ease: 'easeOut' }}
@@ -84,9 +84,9 @@ export const CinematicHero: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Layer 2: Dr. B. R. Ambedkar Transparent PNG Foreground (Left Position, Overlapping Audience) */}
+      {/* Layer 2: Dr. B. R. Ambedkar Transparent PNG Foreground (Increased Prominence & Scale) */}
       <motion.div
-        className="absolute bottom-0 left-0 sm:left-2 md:left-6 lg:left-10 w-[260px] sm:w-[350px] md:w-[440px] lg:w-[500px] xl:w-[540px] h-[78%] sm:h-[88%] md:h-[95%] pointer-events-none z-20"
+        className="absolute bottom-0 left-0 sm:left-2 md:left-4 lg:left-6 w-[300px] sm:w-[400px] md:w-[500px] lg:w-[600px] xl:w-[680px] h-[85%] sm:h-[95%] lg:h-[105%] origin-bottom-left scale-100 sm:scale-105 lg:scale-[1.22] xl:scale-[1.30] pointer-events-none z-20"
         initial={hasVisited ? { opacity: 1, x: 0 } : { opacity: 0, x: -35 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: animDuration, delay: staggerDelay, ease: 'easeOut' }}
