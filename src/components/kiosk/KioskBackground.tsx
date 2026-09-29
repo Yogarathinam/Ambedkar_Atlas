@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
-// Import processed kiosk assets
+// Import authentic photographic panorama stitched from crowd1, crowd2, crowd3
 import crowdPanoramaWebp from '../../assets/kiosk/processed/kiosk-crowd-panorama.webp';
+
+// Import processed slide assets
 import slidePortraitBook from '../../assets/kiosk/processed/slide-portrait-book.webp';
 import slideLibraryStudy from '../../assets/kiosk/processed/slide-library-study.webp';
 import slideStatuePointing from '../../assets/kiosk/processed/slide-statue-pointing.webp';
@@ -28,7 +30,7 @@ export const KIOSK_SLIDES: KioskSlide[] = [
     title: 'The Presiding Scholar',
     subtitle: 'Framed with manuscript and pen',
     yearContext: 'New Delhi • 1950',
-    ambientGradient: 'radial-gradient(ellipse at 50% 38%, #FBF8F2 0%, #F5EBDD 50%, #E7D5B9 100%)',
+    ambientGradient: 'radial-gradient(ellipse at 75% 45%, #FAF4EA 0%, #F5EBDD 50%, #E7D5B9 100%)',
     ambientGlow: 'rgba(185, 101, 53, 0.16)',
     isDarkTheme: false,
   },
@@ -38,7 +40,7 @@ export const KIOSK_SLIDES: KioskSlide[] = [
     title: 'Midnight in the Library',
     subtitle: 'A lifetime dedicated to reading and scholarship',
     yearContext: 'Study & Research Archive',
-    ambientGradient: 'radial-gradient(ellipse at 50% 38%, #363028 0%, #23201C 55%, #181512 100%)',
+    ambientGradient: 'radial-gradient(ellipse at 75% 45%, #363028 0%, #23201C 55%, #181512 100%)',
     ambientGlow: 'rgba(200, 155, 60, 0.24)',
     isDarkTheme: true,
   },
@@ -48,7 +50,7 @@ export const KIOSK_SLIDES: KioskSlide[] = [
     title: 'Voice of Liberation',
     subtitle: 'Statue pointing toward justice and equality',
     yearContext: 'Constitutional Memorial',
-    ambientGradient: 'radial-gradient(ellipse at 50% 38%, #F8F3EA 0%, #EFE4D3 55%, #DFCDAE 100%)',
+    ambientGradient: 'radial-gradient(ellipse at 75% 45%, #F8F3EA 0%, #EFE4D3 55%, #DFCDAE 100%)',
     ambientGlow: 'rgba(185, 101, 53, 0.20)',
     isDarkTheme: false,
   },
@@ -58,7 +60,7 @@ export const KIOSK_SLIDES: KioskSlide[] = [
     title: 'The Living Constitution',
     subtitle: 'Monumental bronze sculpture, Parliament House',
     yearContext: 'National Assembly Heritage',
-    ambientGradient: 'radial-gradient(ellipse at 50% 38%, #FAF5EC 0%, #EFE6D8 55%, #DECBB2 100%)',
+    ambientGradient: 'radial-gradient(ellipse at 75% 45%, #FAF5EC 0%, #EFE6D8 55%, #DECBB2 100%)',
     ambientGlow: 'rgba(200, 155, 60, 0.22)',
     isDarkTheme: false,
   },
@@ -68,7 +70,7 @@ export const KIOSK_SLIDES: KioskSlide[] = [
     title: 'Architect of the Republic',
     subtitle: 'Standing tall in civic remembrance',
     yearContext: 'Republic Memorial',
-    ambientGradient: 'radial-gradient(ellipse at 50% 38%, #FAF6EE 0%, #F3ECE0 55%, #E5DAC9 100%)',
+    ambientGradient: 'radial-gradient(ellipse at 75% 45%, #FAF6EE 0%, #F3ECE0 55%, #E5DAC9 100%)',
     ambientGlow: 'rgba(185, 101, 53, 0.16)',
     isDarkTheme: false,
   },
@@ -78,35 +80,19 @@ export const KIOSK_SLIDES: KioskSlide[] = [
     title: 'Beacon of Equality',
     subtitle: 'The historic Constitution bearer memorial',
     yearContext: 'Public Heritage Memorial',
-    ambientGradient: 'radial-gradient(ellipse at 50% 38%, #FAF4EA 0%, #ECE2D2 55%, #DBC8AF 100%)',
+    ambientGradient: 'radial-gradient(ellipse at 75% 45%, #FAF4EA 0%, #ECE2D2 55%, #DBC8AF 100%)',
     ambientGlow: 'rgba(113, 63, 43, 0.18)',
     isDarkTheme: false,
   },
 ];
 
 interface KioskBackgroundProps {
-  onSlideChange?: (slide: KioskSlide) => void;
+  currentSlideIndex: number;
 }
 
-export const KioskBackground: React.FC<KioskBackgroundProps> = ({ onSlideChange }) => {
-  const [currentIdx, setCurrentIdx] = useState(0);
+export const KioskBackground: React.FC<KioskBackgroundProps> = ({ currentSlideIndex }) => {
   const prefersReducedMotion = useReducedMotion();
-  const currentSlide = KIOSK_SLIDES[currentIdx];
-
-  // Auto-advance slideshow every 9 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIdx((prev) => (prev + 1) % KIOSK_SLIDES.length);
-    }, 9000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Notify parent of current slide for adaptive kiosk contrast
-  useEffect(() => {
-    if (onSlideChange) {
-      onSlideChange(currentSlide);
-    }
-  }, [currentIdx, onSlideChange, currentSlide]);
+  const currentSlide = KIOSK_SLIDES[currentSlideIndex] || KIOSK_SLIDES[0];
 
   return (
     <div
@@ -121,72 +107,47 @@ export const KioskBackground: React.FC<KioskBackgroundProps> = ({ onSlideChange 
         key={`glow-${currentSlide.id}`}
         className="absolute inset-0 opacity-80 transition-opacity duration-1000"
         style={{
-          background: `radial-gradient(circle at 50% 35%, ${currentSlide.ambientGlow} 0%, transparent 65%)`,
+          background: `radial-gradient(circle at 72% 42%, ${currentSlide.ambientGlow} 0%, transparent 65%)`,
         }}
       />
 
-      {/* 2. Background Slideshow Layer (Feathered Dr. Ambedkar Images) */}
-      <div className="absolute inset-x-0 top-0 h-[68%] sm:h-[72%] md:h-[78%] flex items-center justify-center">
+      {/* 2. Right-Aligned Presiding Ambedkar Slideshow (Safe distance away from left-hand touch text) */}
+      <div className="absolute right-0 top-16 bottom-16 w-full lg:w-[48%] xl:w-[44%] flex items-center justify-center lg:justify-end pr-4 lg:pr-10 pointer-events-none z-[5]">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide.id}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 0.65, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
+            initial={{ opacity: 0, x: 25 }}
+            animate={{ opacity: 0.92, x: 0 }}
+            exit={{ opacity: 0, x: -25 }}
             transition={{
-              duration: prefersReducedMotion ? 0.3 : 1.2,
+              duration: prefersReducedMotion ? 0.3 : 1.1,
               ease: 'easeInOut',
             }}
-            className="relative w-full h-full flex items-center justify-center"
+            className="relative w-full h-full flex flex-col items-center justify-center lg:items-end lg:justify-center"
           >
             <img
               src={currentSlide.image}
               alt={currentSlide.title}
-              className="max-h-[95%] max-w-[85%] sm:max-w-[70%] md:max-w-[55%] object-contain object-center filter drop-shadow-[0_12px_36px_rgba(41,37,31,0.18)]"
+              className="max-h-[82%] sm:max-h-[86%] w-auto max-w-full object-contain object-right-bottom filter drop-shadow-[0_18px_42px_rgba(41,37,31,0.22)]"
             />
+            {/* Archival metadata caption pill under slide */}
+            <div className="mt-3 px-3.5 py-1 rounded-full bg-black/20 dark:bg-white/10 backdrop-blur-md border border-white/20 text-[11px] text-stone-800 dark:text-stone-200 font-serif flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#B96535]" />
+              <span>{currentSlide.title}</span>
+              <span className="opacity-60 text-[10px] font-mono">({currentSlide.yearContext})</span>
+            </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* 3. Slide Caption Badge (Archival metadata indicator) */}
-      <div className="absolute top-24 right-6 sm:right-10 pointer-events-auto z-20">
-        <div className="bg-[#FBF8F2]/80 backdrop-blur-xs border border-[#DED3C2]/80 rounded-2xl px-3.5 py-1.5 shadow-2xs flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[#B96535] animate-ping" />
-          <div className="text-left">
-            <span className="block text-[11px] font-bold font-serif text-[#29251F]">
-              {currentSlide.title}
-            </span>
-            <span className="block text-[9px] text-[#827567] font-mono tracking-wider">
-              {currentSlide.yearContext}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Slideshow Progress Indicator Dots */}
-      <div className="absolute top-24 left-6 sm:left-10 pointer-events-auto flex items-center gap-1.5 z-20">
-        {KIOSK_SLIDES.map((slide, idx) => (
-          <button
-            key={slide.id}
-            onClick={() => setCurrentIdx(idx)}
-            title={slide.title}
-            className={`transition-all duration-300 rounded-full ${
-              idx === currentIdx
-                ? 'w-6 h-2 bg-[#B96535]'
-                : 'w-2 h-2 bg-[#827567]/40 hover:bg-[#827567]'
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* 5. Stitched Panoramic Audience Silhouette (crowd1 + crowd2 + crowd3) */}
+      {/* 3. Bottom Panoramic Audience (Authentic crowd1, crowd2, crowd3 seamless panorama) */}
       <motion.div
         className="absolute bottom-0 inset-x-0 w-full flex items-end justify-center pointer-events-none z-10 transform-gpu will-change-transform"
         animate={
           prefersReducedMotion
             ? { y: 0 }
             : {
-                y: [0, -4, 0],
+                y: [0, -3, 0],
                 transition: {
                   repeat: Infinity,
                   repeatType: 'reverse',
@@ -196,16 +157,15 @@ export const KioskBackground: React.FC<KioskBackgroundProps> = ({ onSlideChange 
               }
         }
       >
-        <div className="relative w-full overflow-hidden">
+        <div className="relative w-full overflow-hidden flex items-end justify-center">
           <img
             src={crowdPanoramaWebp}
-            alt="Assembled Citizens Audience"
-            className="w-full h-auto min-h-[160px] sm:min-h-[220px] md:min-h-[280px] lg:min-h-[320px] object-cover object-bottom opacity-95 filter drop-shadow-[0_-4px_16px_rgba(41,37,31,0.12)]"
+            alt="Historical Gathering Audience Panorama"
+            className="w-full h-auto min-h-[120px] sm:min-h-[160px] md:min-h-[200px] max-h-[24vh] object-cover object-bottom opacity-90 select-none filter contrast-105"
           />
-          {/* Subtle bottom fade gradient */}
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#29251F]/40 to-transparent pointer-events-none" />
         </div>
       </motion.div>
     </div>
   );
 };
+
