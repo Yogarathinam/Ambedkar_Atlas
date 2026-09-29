@@ -24,7 +24,7 @@ export const BookCover: React.FC<BookCoverProps> = ({
         zIndex: isPastHalf ? 10 : 40,
       }}
       onClick={onOpenClick}
-      title={openProgress < 0.1 ? 'Click or scroll down to open The Ambedkar Chronicle' : undefined}
+      title={openProgress < 0.1 ? 'Click to open' : undefined}
     >
       {/* ============================================================ */}
       {/* FRONT COVER (Faces user when closed, rotateY: 0deg)         */}
@@ -105,13 +105,9 @@ export const BookCover: React.FC<BookCoverProps> = ({
           </div>
 
           {/* Bottom Colophon Inscription */}
-          <div className="space-y-2 pb-1">
+          <div className="pb-1">
             <span className="text-[10px] sm:text-xs font-mono tracking-[0.24em] text-[#D4AF37]/80 uppercase block">
               1891 – 1956 • Verified Records
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#18110B]/80 border border-[#D4AF37]/30 text-[9px] sm:text-[10px] text-[#E7D5B9] font-medium tracking-wider uppercase">
-              <span>Scroll to Open Book</span>
-              <span className="text-[#D4AF37]">↓</span>
             </span>
           </div>
 

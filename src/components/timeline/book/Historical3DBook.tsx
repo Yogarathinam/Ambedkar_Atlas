@@ -4,33 +4,50 @@ import { BookCover } from './BookCover';
 import { BookSpread } from './BookSpread';
 import { BookControls } from './BookControls';
 import { bookAudio } from './bookSound';
-import ambedkarLogo from '../../../assets/hero/image.png';
-import { ShieldCheck, BookOpen, ArrowUp, Calendar, ExternalLink } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
 interface Historical3DBookProps {
   events: TimelineEvent[];
   selectedYear?: number | null;
   onSelectEvent: (event: TimelineEvent) => void;
   onResetFilters?: () => void;
+  onToggleViewMode?: (mode: '3d-book' | 'list') => void;
+  viewMode?: '3d-book' | 'list';
 }
 
 export const Historical3DBook: React.FC<Historical3DBookProps> = ({
   events,
   selectedYear,
   onSelectEvent,
+  onToggleViewMode,
+  viewMode = '3d-book',
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+
+  // Spread indexing:
+  // 0 = Front Cover (Closed)
+  // 1..totalSpreads = Milestone spreads (1 to events.length)
+  // totalSpreads + 1 = Colophon & Final Legacy spread
+  const totalSpreads = events.length;
+  const totalSegments = totalSpreads + 1.5;
+
+  const [currentSpreadIndex, setCurrentSpreadIndex] = useState<number>(0);
+  const [turnProgress, setTurnProgress] = useState<number>(0); // 0 (flat recto) to 1 (flat verso)
+  const [turnDirection, setTurnDirection] = useState<'forward' | 'reverse' | null>(null);
   const [scrollProgress, setScrollProgress] = useState<number>(0);
   const [isMuted, setIsMuted] = useState<boolean>(bookAudio.getMuted());
-  const [viewMode, setViewMode] = useState<'3d-book' | 'list'>('3d-book');
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const lastFlippedIndexRef = useRef<number>(-1);
 
-  // Total pages: Cover (0) + events.length + Final Colophon (1)
-  const totalSpreads = events.length;
-  const totalSegments = totalSpreads + 1.5; // cover + events + colophon
+  // Physics animation & gesture tracking refs
+  const isAutoAnimatingRef = useRef<boolean>(false);
+  const animationFrameRef = useRef<number | null>(null);
+  const isProgrammaticScrollRef = useRef<boolean>(false);
+  const lastTurnTimeRef = useRef<number>(0);
+  const touchStartYRef = useRef<number>(0);
+  const touchStartXRef = useRef<number>(0);
 
-  // Check viewport size
+  // Viewport detection
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -40,55 +57,7 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Sync scroll progress from window scrolling through container
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const containerHeight = containerRef.current.offsetHeight;
-      const windowHeight = window.innerHeight;
-
-      // When containerTop <= 64px, user is scrolling through book
-      const topOffset = rect.top - 64;
-      const scrollableDistance = containerHeight - windowHeight;
-
-      if (scrollableDistance <= 0) return;
-
-      const progress = Math.max(0, Math.min(1, -topOffset / scrollableDistance));
-      setScrollProgress(progress);
-
-      // Check if page flipped for audio feedback
-      const currentSegment = progress * totalSegments;
-      const currentFloor = Math.floor(currentSegment);
-      if (currentFloor !== lastFlippedIndexRef.current && lastFlippedIndexRef.current !== -1) {
-        bookAudio.playPageTurn();
-      }
-      lastFlippedIndexRef.current = currentFloor;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [totalSegments]);
-
-  // Derived current spread index and page turn progress
-  // 0 = Cover
-  // 1..totalSpreads = Event Spreads
-  // totalSpreads + 1 = Colophon
-  const { currentSpreadIndex, pageTurnProgress, isCoverOpen } = useMemo(() => {
-    const totalUnits = totalSegments;
-    const currentUnit = scrollProgress * totalUnits;
-    const spreadIndex = Math.min(totalSpreads + 1, Math.floor(currentUnit));
-    const turnFraction = currentUnit - spreadIndex;
-
-    return {
-      currentSpreadIndex: spreadIndex,
-      pageTurnProgress: Math.max(0, Math.min(1, turnFraction)),
-      isCoverOpen: spreadIndex > 0 || turnFraction > 0.1,
-    };
-  }, [scrollProgress, totalSegments, totalSpreads]);
-
-  // Calculate active event for HUD
+  // Compute active event for top HUD display
   const activeEvent = useMemo(() => {
     if (currentSpreadIndex === 0) return events[0];
     if (currentSpreadIndex > totalSpreads) return events[events.length - 1];
@@ -97,32 +66,127 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
 
   const activeYear = activeEvent ? activeEvent.year : 1891;
 
-  // Jump smoothly to a specific spread
-  const scrollToSpread = useCallback((targetSpread: number) => {
+  // Synchronize window scroll position to match a given spread index
+  const syncScrollToSpread = useCallback((targetSpread: number) => {
     if (!containerRef.current) return;
     const containerTop = containerRef.current.offsetTop;
     const containerHeight = containerRef.current.offsetHeight;
     const windowHeight = window.innerHeight;
     const scrollableDistance = containerHeight - windowHeight;
+    if (scrollableDistance <= 0) return;
 
-    const targetProgress = Math.max(0, Math.min(1, (targetSpread + 0.1) / totalSegments));
+    const targetProgress = Math.max(0, Math.min(1, targetSpread / totalSegments));
     const targetY = containerTop + targetProgress * scrollableDistance;
 
+    isProgrammaticScrollRef.current = true;
     window.scrollTo({
       top: targetY,
-      behavior: 'smooth',
+      behavior: 'auto',
     });
+
+    setTimeout(() => {
+      isProgrammaticScrollRef.current = false;
+    }, 60);
   }, [totalSegments]);
 
-  // Jump to specific historical year
+  // Physics Engine: Natural Automatic Page-Turning Completion
+  const animatePageCompletion = useCallback((
+    fromProgress: number,
+    toProgress: number,
+    direction: 'forward' | 'reverse',
+    onFinish: () => void
+  ) => {
+    if (isAutoAnimatingRef.current) return;
+    isAutoAnimatingRef.current = true;
+    setTurnDirection(direction);
+
+    // Cancel any previous animation frame
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+
+    // Play tactile paper rustle sound
+    bookAudio.playPageTurn();
+
+    // Check for prefers-reduced-motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const duration = prefersReducedMotion ? 60 : 340; // 340ms natural paper momentum
+    const startTime = performance.now();
+
+    const step = (now: number) => {
+      const elapsed = now - startTime;
+      const t = Math.min(1, elapsed / duration);
+      // Cubic ease-out: 1 - (1 - t)^3 for physical gravity deceleration
+      const ease = 1 - Math.pow(1 - t, 3);
+      const currentVal = fromProgress + (toProgress - fromProgress) * ease;
+
+      setTurnProgress(currentVal);
+
+      if (t < 1) {
+        animationFrameRef.current = requestAnimationFrame(step);
+      } else {
+        // Finalize turn
+        setTurnProgress(toProgress === 1 ? 1 : 0);
+        onFinish();
+
+        // Brief safety cooldown to prevent double-flips from rapid scroll momentum
+        setTimeout(() => {
+          isAutoAnimatingRef.current = false;
+          setTurnDirection(null);
+          setTurnProgress(0);
+          lastTurnTimeRef.current = Date.now();
+        }, 90);
+      }
+    };
+
+    animationFrameRef.current = requestAnimationFrame(step);
+  }, []);
+
+  // Programmatic Page Turning trigger (HUD buttons, keyboard, cover click)
+  const triggerPageTurn = useCallback((direction: 'forward' | 'reverse') => {
+    if (isAutoAnimatingRef.current) return;
+    if (Date.now() - lastTurnTimeRef.current < 120) return;
+
+    if (direction === 'forward') {
+      if (currentSpreadIndex > totalSpreads) return;
+      animatePageCompletion(0, 1, 'forward', () => {
+        setCurrentSpreadIndex((prev) => {
+          const next = Math.min(totalSpreads + 1, prev + 1);
+          syncScrollToSpread(next);
+          return next;
+        });
+      });
+    } else {
+      if (currentSpreadIndex <= 0) return;
+      animatePageCompletion(1, 0, 'reverse', () => {
+        setCurrentSpreadIndex((prev) => {
+          const prevIdx = Math.max(0, prev - 1);
+          syncScrollToSpread(prevIdx);
+          return prevIdx;
+        });
+      });
+    }
+  }, [animatePageCompletion, currentSpreadIndex, totalSpreads, syncScrollToSpread]);
+
+  // Jump smoothly to a specific spread or year
+  const handleJumpToSpread = useCallback((targetSpread: number) => {
+    if (isAutoAnimatingRef.current) return;
+    const clamped = Math.max(0, Math.min(totalSpreads + 1, targetSpread));
+    setCurrentSpreadIndex(clamped);
+    setTurnProgress(0);
+    setTurnDirection(null);
+    syncScrollToSpread(clamped);
+    bookAudio.playPageTurn();
+  }, [syncScrollToSpread, totalSpreads]);
+
   const handleJumpToYear = useCallback((year: number) => {
     const idx = events.findIndex((e) => e.year >= year);
     if (idx !== -1) {
-      scrollToSpread(idx + 1);
+      handleJumpToSpread(idx + 1);
     }
-  }, [events, scrollToSpread]);
+  }, [events, handleJumpToSpread]);
 
-  // Sync with prop selectedYear if provided
+  // Synchronize prop selectedYear if provided
   useEffect(() => {
     if (selectedYear) {
       handleJumpToYear(selectedYear);
@@ -135,46 +199,328 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
     setIsMuted(muted);
   };
 
-  // Keyboard navigation (ArrowLeft / ArrowRight)
+  // Keyboard navigation (ArrowLeft / ArrowRight / PageUp / PageDown)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+      if (
+        document.activeElement?.tagName === 'INPUT' ||
+        document.activeElement?.tagName === 'TEXTAREA'
+      ) {
         return;
       }
       if (e.key === 'ArrowRight' || e.key === 'PageDown') {
         e.preventDefault();
-        scrollToSpread(Math.min(totalSpreads + 1, currentSpreadIndex + 1));
+        triggerPageTurn('forward');
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
         e.preventDefault();
-        scrollToSpread(Math.max(0, currentSpreadIndex - 1));
+        triggerPageTurn('reverse');
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentSpreadIndex, totalSpreads, scrollToSpread]);
+  }, [triggerPageTurn]);
 
-  // Current and Next spread event objects for 3D page turning
+  // Synchronize Scroll Progress from Window Scrolling
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current || isProgrammaticScrollRef.current) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+      const containerHeight = containerRef.current.offsetHeight;
+      const windowHeight = window.innerHeight;
+      const scrollableDistance = containerHeight - windowHeight;
+
+      if (scrollableDistance <= 0) return;
+
+      const topOffset = rect.top - 56;
+      const rawProgress = Math.max(0, Math.min(1, -topOffset / scrollableDistance));
+      setScrollProgress(rawProgress);
+
+      // If user is animating, don't interrupt with scroll position changes
+      if (isAutoAnimatingRef.current) return;
+
+      // When outside the container viewport, do not intercept
+      if (rect.top > 80 || rect.bottom < windowHeight - 80) return;
+
+      const currentUnit = rawProgress * totalSegments;
+      const targetSpread = Math.min(totalSpreads + 1, Math.floor(currentUnit));
+      const fraction = currentUnit - targetSpread;
+
+      // Forward page turn initiated by scroll
+      if (targetSpread === currentSpreadIndex) {
+        if (fraction > 0.03) {
+          setTurnDirection('forward');
+          // Below tipping threshold: follow user input directly
+          if (fraction < 0.48) {
+            setTurnProgress(fraction);
+          } else {
+            // TIPPING THRESHOLD CROSSED (~90 degrees): Auto-complete turn
+            animatePageCompletion(fraction, 1, 'forward', () => {
+              const nextSpread = Math.min(totalSpreads + 1, currentSpreadIndex + 1);
+              setCurrentSpreadIndex(nextSpread);
+              syncScrollToSpread(nextSpread);
+            });
+          }
+        } else {
+          setTurnProgress(0);
+          setTurnDirection(null);
+        }
+      } else if (targetSpread < currentSpreadIndex) {
+        // Reverse page turn initiated by scroll
+        const reverseFraction = 1 - (currentSpreadIndex - currentUnit);
+        if (reverseFraction < 0.97) {
+          setTurnDirection('reverse');
+          // Above reverse tipping threshold: follow user input directly
+          if (reverseFraction > 0.52) {
+            setTurnProgress(reverseFraction);
+          } else {
+            // REVERSE TIPPING THRESHOLD CROSSED: Auto-complete reverse turn
+            animatePageCompletion(reverseFraction, 0, 'reverse', () => {
+              const prevSpread = Math.max(0, currentSpreadIndex - 1);
+              setCurrentSpreadIndex(prevSpread);
+              syncScrollToSpread(prevSpread);
+            });
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [animatePageCompletion, currentSpreadIndex, totalSegments, totalSpreads, syncScrollToSpread]);
+
+  // High-Precision Mouse Wheel & Trackpad Gesture Engine on 3D Stage
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    let wheelAccumulator = 0;
+    let wheelTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const handleWheel = (e: WheelEvent) => {
+      // If auto-animating, lock out conflicting gestures
+      if (isAutoAnimatingRef.current) {
+        e.preventDefault();
+        return;
+      }
+
+      // If at closed cover (0) and scrolling up, allow normal page scroll outside timeline
+      if (currentSpreadIndex === 0 && e.deltaY < 0 && turnProgress <= 0.05) {
+        return;
+      }
+      // If at colophon end and scrolling down, allow normal page scroll outside timeline
+      if (currentSpreadIndex > totalSpreads && e.deltaY > 0) {
+        return;
+      }
+
+      // Prevent abrupt window jumping while interacting directly with the book
+      e.preventDefault();
+
+      if (Date.now() - lastTurnTimeRef.current < 120) return;
+
+      wheelAccumulator += e.deltaY;
+
+      if (wheelTimeout) clearTimeout(wheelTimeout);
+      wheelTimeout = setTimeout(() => {
+        // If user released before crossing the tipping point, gently ease page back to rest
+        if (!isAutoAnimatingRef.current && turnProgress > 0 && turnProgress < 0.48) {
+          animatePageCompletion(turnProgress, 0, 'forward', () => {
+            setTurnProgress(0);
+            setTurnDirection(null);
+          });
+        } else if (!isAutoAnimatingRef.current && turnProgress > 0.52 && turnProgress < 1) {
+          animatePageCompletion(turnProgress, 1, 'reverse', () => {
+            setTurnProgress(0);
+            setTurnDirection(null);
+          });
+        }
+        wheelAccumulator = 0;
+      }, 240);
+
+      // Delta threshold to reach 90 degrees tipping point
+      const THRESHOLD = 140;
+
+      if (wheelAccumulator > 0) {
+        // Forward turn gesture
+        if (currentSpreadIndex > totalSpreads) return;
+        const progress = Math.min(0.5, (wheelAccumulator / THRESHOLD) * 0.5);
+        setTurnDirection('forward');
+        setTurnProgress(progress);
+
+        if (progress >= 0.48) {
+          // TIPPING THRESHOLD CROSSED!
+          wheelAccumulator = 0;
+          animatePageCompletion(progress, 1, 'forward', () => {
+            const nextSpread = Math.min(totalSpreads + 1, currentSpreadIndex + 1);
+            setCurrentSpreadIndex(nextSpread);
+            syncScrollToSpread(nextSpread);
+          });
+        }
+      } else if (wheelAccumulator < 0) {
+        // Reverse turn gesture
+        if (currentSpreadIndex <= 0) return;
+        const progress = Math.max(0.5, 1 - (Math.abs(wheelAccumulator) / THRESHOLD) * 0.5);
+        setTurnDirection('reverse');
+        setTurnProgress(progress);
+
+        if (progress <= 0.52) {
+          // REVERSE TIPPING THRESHOLD CROSSED!
+          wheelAccumulator = 0;
+          animatePageCompletion(progress, 0, 'reverse', () => {
+            const prevSpread = Math.max(0, currentSpreadIndex - 1);
+            setCurrentSpreadIndex(prevSpread);
+            syncScrollToSpread(prevSpread);
+          });
+        }
+      }
+    };
+
+    stage.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      stage.removeEventListener('wheel', handleWheel);
+      if (wheelTimeout) clearTimeout(wheelTimeout);
+    };
+  }, [animatePageCompletion, currentSpreadIndex, totalSpreads, turnProgress, syncScrollToSpread]);
+
+  // Touch Gesture Handling for Mobile & Tablets
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    let touchDeltaY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (isAutoAnimatingRef.current) return;
+      touchStartYRef.current = e.touches[0].clientY;
+      touchStartXRef.current = e.touches[0].clientX;
+      touchDeltaY = 0;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (isAutoAnimatingRef.current) {
+        e.preventDefault();
+        return;
+      }
+
+      const currentY = e.touches[0].clientY;
+      const currentX = e.touches[0].clientX;
+      const diffY = touchStartYRef.current - currentY;
+      const diffX = touchStartXRef.current - currentX;
+
+      // Check if primary gesture is vertical swipe or horizontal page turn
+      const delta = Math.abs(diffX) > Math.abs(diffY) ? diffX : diffY;
+      touchDeltaY = delta;
+
+      const TOUCH_THRESHOLD = 110;
+
+      if (delta > 15) {
+        // Forward swipe
+        if (currentSpreadIndex > totalSpreads) return;
+        const p = Math.min(0.5, (delta / TOUCH_THRESHOLD) * 0.5);
+        setTurnDirection('forward');
+        setTurnProgress(p);
+
+        if (p >= 0.48) {
+          animatePageCompletion(p, 1, 'forward', () => {
+            const nextSpread = Math.min(totalSpreads + 1, currentSpreadIndex + 1);
+            setCurrentSpreadIndex(nextSpread);
+            syncScrollToSpread(nextSpread);
+          });
+        }
+      } else if (delta < -15) {
+        // Reverse swipe
+        if (currentSpreadIndex <= 0) return;
+        const p = Math.max(0.5, 1 - (Math.abs(delta) / TOUCH_THRESHOLD) * 0.5);
+        setTurnDirection('reverse');
+        setTurnProgress(p);
+
+        if (p <= 0.52) {
+          animatePageCompletion(p, 0, 'reverse', () => {
+            const prevSpread = Math.max(0, currentSpreadIndex - 1);
+            setCurrentSpreadIndex(prevSpread);
+            syncScrollToSpread(prevSpread);
+          });
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (!isAutoAnimatingRef.current) {
+        if (turnProgress > 0 && turnProgress < 0.48) {
+          animatePageCompletion(turnProgress, 0, 'forward', () => {
+            setTurnProgress(0);
+            setTurnDirection(null);
+          });
+        } else if (turnProgress > 0.52 && turnProgress < 1) {
+          animatePageCompletion(turnProgress, 1, 'reverse', () => {
+            setTurnProgress(0);
+            setTurnDirection(null);
+          });
+        }
+      }
+    };
+
+    stage.addEventListener('touchstart', handleTouchStart, { passive: true });
+    stage.addEventListener('touchmove', handleTouchMove, { passive: false });
+    stage.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      stage.removeEventListener('touchstart', handleTouchStart);
+      stage.removeEventListener('touchmove', handleTouchMove);
+      stage.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [animatePageCompletion, currentSpreadIndex, totalSpreads, turnProgress, syncScrollToSpread]);
+
+  // Events for current and adjacent spreads
   const currentEvent = currentSpreadIndex >= 1 && currentSpreadIndex <= totalSpreads
     ? events[currentSpreadIndex - 1]
-    : null;
+    : events[0]; // Preload Milestone 1 when closed
 
   const nextEvent = currentSpreadIndex + 1 <= totalSpreads
     ? events[currentSpreadIndex]
     : null;
+
+  const prevEvent = currentSpreadIndex - 2 >= 0
+    ? events[currentSpreadIndex - 2]
+    : null;
+
+  // Determine turning leaf angle and visibility
+  const isTurning = turnProgress > 0.005 && turnProgress < 0.995;
+  const turnAngle = -turnProgress * 180;
+  const isCoverOpen = currentSpreadIndex > 0 || (turnDirection === 'forward' && turnProgress > 0.08);
 
   return (
     <div
       ref={containerRef}
       className="relative w-full"
       style={{
-        // Generous vertical scroll track: 100vh per spread to ensure smooth, controllable page turns
+        // 85vh per spread ensures comfortable scroll travel
         height: `${Math.max(300, (totalSegments + 1) * 85)}vh`,
+        // Continuous wooden surface across the entire timeline track
+        backgroundImage: `url('https://i.pinimg.com/736x/db/57/c4/db57c43bb1b847a6547f7fa37c3802da.jpg'), url('/wood-texture.jpg')`,
+        backgroundColor: '#24160E',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
       }}
     >
-      {/* Pinned Sticky Museum Stage */}
-      <div className="sticky top-14 h-[calc(100vh-3.5rem)] w-full flex flex-col justify-between p-3 sm:p-5 lg:p-7 overflow-hidden z-20">
-        
+      {/* Pinned Sticky Museum Stage with Subtle Wooden Table Vignette */}
+      <div
+        ref={stageRef}
+        className="sticky top-14 h-[calc(100vh-3.5rem)] w-full flex flex-col justify-between p-3 sm:p-5 lg:p-7 overflow-hidden z-20 select-none"
+        style={{
+          // Museum table lighting: soft center glow falling off naturally to edges
+          backgroundImage: `radial-gradient(ellipse at 50% 50%, rgba(18,12,8,0.2) 0%, rgba(10,6,4,0.62) 100%), url('https://i.pinimg.com/736x/db/57/c4/db57c43bb1b847a6547f7fa37c3802da.jpg'), url('/wood-texture.jpg')`,
+          backgroundColor: '#24160E',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed',
+        }}
+      >
         {/* Top HUD Controls & Scrubber */}
         <BookControls
           currentSpreadIndex={currentSpreadIndex}
@@ -183,20 +529,21 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
           activeYear={activeYear}
           isMuted={isMuted}
           viewMode={viewMode}
-          onPrevSpread={() => scrollToSpread(Math.max(0, currentSpreadIndex - 1))}
-          onNextSpread={() => scrollToSpread(Math.min(totalSpreads + 1, currentSpreadIndex + 1))}
+          onPrevSpread={() => triggerPageTurn('reverse')}
+          onNextSpread={() => triggerPageTurn('forward')}
           onJumpToYear={handleJumpToYear}
           onToggleSound={handleToggleSound}
-          onToggleViewMode={setViewMode}
+          onToggleViewMode={(mode) => onToggleViewMode && onToggleViewMode(mode)}
         />
 
         {/* ============================================================ */}
-        {/* 3D BOOK STAGE (Centrally positioned with surrounding space)  */}
+        {/* 3D BOOK STAGE (Centrally positioned on wooden surface)       */}
         {/* ============================================================ */}
         <div className="relative w-full my-auto flex items-center justify-center py-2 sm:py-4">
           
-          {/* Ambient Museum Under-Book Drop Shadow */}
-          <div className="absolute w-[92%] sm:w-[88%] lg:w-[82%] max-w-5xl h-16 sm:h-20 -bottom-8 rounded-[50%] bg-black/35 blur-2xl pointer-events-none" />
+          {/* Deep Ambient Wooden Table Contact & Drop Shadows */}
+          <div className="absolute w-[94%] sm:w-[90%] lg:w-[86%] max-w-5xl h-20 sm:h-24 -bottom-10 rounded-[50%] bg-black/65 blur-3xl pointer-events-none" />
+          <div className="absolute w-[86%] max-w-4xl h-10 -bottom-4 rounded-[50%] bg-black/80 blur-xl pointer-events-none" />
 
           {/* 3D Perspective Viewport */}
           <div
@@ -207,7 +554,7 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
             }}
           >
             {/* Hardcover Outer Frame (Dark Walnut Binder) */}
-            <div className="absolute inset-0 rounded-3xl bg-[#1E140E] p-2 sm:p-3 shadow-[0_25px_60px_rgba(0,0,0,0.5),inset_0_1px_2px_rgba(255,255,255,0.2)] border border-[#3E281C]">
+            <div className="absolute inset-0 rounded-3xl bg-[#1E140E] p-2 sm:p-3 shadow-[0_30px_70px_rgba(0,0,0,0.65),0_10px_25px_rgba(0,0,0,0.5),inset_0_1px_2px_rgba(255,255,255,0.2)] border border-[#3E281C]">
               
               {/* Outer Leather Grain Sheen */}
               <div className="absolute inset-0 rounded-3xl opacity-20 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.2),transparent_70%)] pointer-events-none" />
@@ -237,36 +584,17 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
               {/* ====================================================== */}
               <div className="relative w-full h-full rounded-2xl overflow-hidden bg-[#FAF4EA] flex shadow-inner">
                 
-                {/* When cover is completely closed */}
-                {currentSpreadIndex === 0 && (
-                  <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-[#FAF4EA] space-y-4">
-                    <img
-                      src={ambedkarLogo}
-                      alt="Dr. B. R. Ambedkar"
-                      className="w-24 h-24 object-contain opacity-70"
-                    />
-                    <div className="space-y-1">
-                      <h3 className="font-serif text-2xl font-bold text-[#29251F]">
-                        The Book of Ambedkar
-                      </h3>
-                      <p className="text-xs text-[#827567] max-w-sm">
-                        Scroll down to open the antique chronicle and turn through 24 historic milestones of Dr. B. R. Ambedkar.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* When showing active event spread */}
-                {currentEvent && (
+                {/* Active Event Spread or Preloaded Milestone 1 under closed cover */}
+                {currentSpreadIndex <= totalSpreads && (
                   <BookSpread
                     event={currentEvent}
-                    pageNumber={currentSpreadIndex}
+                    pageNumber={Math.max(1, currentSpreadIndex)}
                     totalPages={totalSpreads}
                     onOpenProvenance={onSelectEvent}
                   />
                 )}
 
-                {/* When reaching final colophon spread */}
+                {/* Final Colophon & Testament Spread */}
                 {currentSpreadIndex > totalSpreads && (
                   <div className="w-full h-full flex flex-col md:flex-row select-text font-serif">
                     {/* Left Colophon Page */}
@@ -311,7 +639,7 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
                         <div className="pt-2 flex flex-col gap-2">
                           <button
                             type="button"
-                            onClick={() => scrollToSpread(1)}
+                            onClick={() => handleJumpToSpread(1)}
                             className="px-4 py-2 bg-[#B96535] hover:bg-[#713F2B] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
                           >
                             Return to Beginning (1891)
@@ -333,36 +661,37 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
               {currentSpreadIndex === 0 && (
                 <BookCover
                   isOpen={isCoverOpen}
-                  openProgress={pageTurnProgress}
-                  onOpenClick={() => scrollToSpread(1)}
+                  openProgress={turnProgress}
+                  onOpenClick={() => triggerPageTurn('forward')}
                 />
               )}
 
               {/* ====================================================== */}
               {/* 3D TURNING PAGE LEAF (Realistic Flip Across Center)   */}
               {/* ====================================================== */}
-              {currentSpreadIndex >= 1 && currentSpreadIndex <= totalSpreads && pageTurnProgress > 0.01 && pageTurnProgress < 0.99 && (
+              {isTurning && currentSpreadIndex >= 1 && (
                 <div
                   className="hidden md:block absolute top-2 bottom-2 right-2 w-[calc(50%-0.5rem)] origin-left pointer-events-none"
                   style={{
                     transformStyle: 'preserve-3d',
-                    transform: `rotateY(${-pageTurnProgress * 180}deg)`,
+                    transform: `rotateY(${turnAngle}deg)`,
                     zIndex: 35,
+                    boxShadow: `${Math.sin(turnProgress * Math.PI) * -20}px 15px 35px rgba(0,0,0,0.35)`,
                   }}
                 >
-                  {/* Front of Turning Leaf (Current Recto page peeling away) */}
+                  {/* Front of Turning Leaf (Visible 0deg to 90deg, peeling from recto) */}
                   <div
                     className="absolute inset-0 rounded-r-xl overflow-hidden bg-[#FAF4EA] border border-[#DED3C2] shadow-2xl p-6 lg:p-8 flex flex-col justify-between"
                     style={{
                       backfaceVisibility: 'hidden',
                     }}
                   >
-                    {/* Dynamic shadow that darkens as page approaches vertical */}
+                    {/* Dynamic surface illumination & gradient shadow */}
                     <div
                       className="absolute inset-0 pointer-events-none"
                       style={{
-                        background: 'linear-gradient(to right, rgba(0,0,0,0.35), transparent)',
-                        opacity: Math.sin(pageTurnProgress * Math.PI) * 0.7,
+                        background: 'linear-gradient(to right, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 20%, transparent 60%)',
+                        opacity: Math.sin(turnProgress * Math.PI) * 0.75,
                       }}
                     />
                     <div className="flex items-center justify-between text-[10px] font-mono text-[#827567] pb-2 border-b border-[#DED3C2]">
@@ -376,16 +705,17 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
                       <h4 className="font-serif text-xl font-bold text-[#29251F]">
                         {currentEvent?.title}
                       </h4>
-                      <p className="text-xs text-[#51483F] line-clamp-4">
+                      <p className="text-xs text-[#51483F] line-clamp-4 leading-relaxed">
                         {currentEvent?.summary}
                       </p>
                     </div>
-                    <div className="text-[10px] font-mono text-[#827567] border-t border-[#DED3C2] pt-2">
-                      Flipping Page...
+                    <div className="text-[10px] font-mono text-[#827567] border-t border-[#DED3C2] pt-2 flex items-center justify-between">
+                      <span>Turning page...</span>
+                      <span className="text-[#B96535]">Milestone {currentSpreadIndex}</span>
                     </div>
                   </div>
 
-                  {/* Back of Turning Leaf (Next Verso page revealed on the left) */}
+                  {/* Back of Turning Leaf (Visible 90deg to 180deg, landing onto verso) */}
                   <div
                     className="absolute inset-0 rounded-l-xl overflow-hidden bg-[#FAF4EA] border border-[#DED3C2] shadow-2xl p-6 lg:p-8 flex flex-col justify-between text-left"
                     style={{
@@ -396,27 +726,36 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
                     <div
                       className="absolute inset-0 pointer-events-none"
                       style={{
-                        background: 'linear-gradient(to left, rgba(0,0,0,0.35), transparent)',
-                        opacity: Math.sin(pageTurnProgress * Math.PI) * 0.7,
+                        background: 'linear-gradient(to left, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 20%, transparent 60%)',
+                        opacity: Math.sin(turnProgress * Math.PI) * 0.75,
                       }}
                     />
                     <div className="flex items-center justify-between text-[10px] font-mono text-[#827567] pb-2 border-b border-[#DED3C2]">
-                      <span>Ambedkar Chronicle</span>
-                      <span>Milestone {currentSpreadIndex + 1}</span>
+                      <span>The Ambedkar Chronicle</span>
+                      <span>
+                        {turnDirection === 'reverse'
+                          ? `Milestone ${currentSpreadIndex - 1}`
+                          : `Milestone ${currentSpreadIndex + 1}`}
+                      </span>
                     </div>
                     <div className="my-auto space-y-2">
-                      <span className="text-xs font-mono font-bold text-[#B96535]">
-                        {nextEvent?.exactDate || nextEvent?.year}
+                      <span className="text-xs font-mono font-bold text-[#B96535] bg-[#FAF4EA] px-2 py-0.5 rounded border border-[#DED3C2]">
+                        {turnDirection === 'reverse'
+                          ? prevEvent?.exactDate || prevEvent?.year
+                          : nextEvent?.exactDate || nextEvent?.year}
                       </span>
                       <h4 className="font-serif text-xl font-bold text-[#29251F]">
-                        {nextEvent?.title}
+                        {turnDirection === 'reverse' ? prevEvent?.title : nextEvent?.title}
                       </h4>
-                      <p className="text-xs text-[#51483F] line-clamp-3">
-                        {nextEvent?.detailedNarrative || nextEvent?.summary}
+                      <p className="text-xs text-[#51483F] line-clamp-3 leading-relaxed">
+                        {turnDirection === 'reverse'
+                          ? prevEvent?.summary
+                          : nextEvent?.detailedNarrative || nextEvent?.summary}
                       </p>
                     </div>
-                    <div className="text-[10px] font-mono text-[#827567] border-t border-[#DED3C2] pt-2">
-                      Turning to Spread {currentSpreadIndex + 1}...
+                    <div className="text-[10px] font-mono text-[#827567] border-t border-[#DED3C2] pt-2 flex items-center justify-between">
+                      <span>Settling onto page...</span>
+                      <span className="text-[#713F2B] font-semibold">Verified Archival Record</span>
                     </div>
                   </div>
                 </div>
@@ -426,22 +765,22 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
           </div>
         </div>
 
-        {/* Bottom Museum Indicator & Scroll Hint */}
-        <div className="flex items-center justify-between px-3 py-1.5 text-[11px] font-mono text-[#827567] border-t border-[#DED3C2]/60">
+        {/* Bottom Museum Status Bar (No introductory instructions) */}
+        <div className="flex items-center justify-between px-3 py-1.5 text-[11px] font-mono text-[#C5B8A5] border border-white/10 bg-[#1A120B]/85 backdrop-blur-md rounded-xl">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>Interactive 3D Book Mode • Scroll down or drag to turn pages</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span>Interactive 3D Chronicle • 24 Verified Milestones (1891–1956)</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span>Scroll Progress:</span>
-            <div className="w-24 h-1.5 bg-[#DED3C2] rounded-full overflow-hidden">
+            <span className="text-[10px] uppercase tracking-wider text-[#C5B8A5]">Chronology:</span>
+            <div className="w-24 h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/10">
               <div
                 className="h-full bg-[#B96535] rounded-full transition-all duration-75"
                 style={{ width: `${Math.round(scrollProgress * 100)}%` }}
               />
             </div>
-            <span className="w-8 text-right font-bold text-[#713F2B]">
+            <span className="w-8 text-right font-bold text-[#D4AF37]">
               {Math.round(scrollProgress * 100)}%
             </span>
           </div>
