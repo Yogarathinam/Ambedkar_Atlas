@@ -162,33 +162,33 @@ export const CinematicHero: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Layer 4: Top-Right Editorial & Repositioned Search Hub (Occupying empty space above crowd) */}
+      {/* Layer 4: Top-Right Glassmorphic Editorial Card & Repositioned Search Hub */}
       <motion.div
-        className="relative lg:absolute top-4 sm:top-6 lg:top-10 right-4 sm:right-6 lg:right-12 xl:right-16 z-30 max-w-lg lg:max-w-xl text-left lg:text-right space-y-3 sm:space-y-4 px-4 sm:px-6 lg:px-0 pt-4 sm:pt-6 lg:pt-0"
+        className="relative lg:absolute top-4 sm:top-6 lg:top-8 right-4 sm:right-6 lg:right-10 xl:right-14 z-30 max-w-lg lg:max-w-xl text-left space-y-3.5 p-5 sm:p-7 rounded-2xl bg-[#FBF8F2]/90 backdrop-blur-md border border-[#DED3C2]/90 shadow-[0_8px_30px_rgba(41,37,31,0.06)]"
         initial={hasVisited ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: animDuration, delay: staggerDelay * 1.5, ease: 'easeOut' }}
       >
         {/* Main Heading: 1st line Archival Ink, 2nd line Burnt Terracotta */}
-        <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold text-[#29251F] tracking-tight leading-[1.12]">
+        <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-[2.65rem] font-bold text-[#29251F] tracking-tight leading-[1.14]">
           Architect of Equality. <br />
           <span className="text-[#B96535]">Voice of the Republic.</span>
         </h1>
 
         {/* Short, Readable Description */}
-        <p className="text-sm sm:text-base lg:text-lg text-[#51483F] leading-relaxed max-w-lg lg:ml-auto font-normal">
+        <p className="text-sm sm:text-base text-[#51483F] leading-relaxed font-normal">
           Explore the writings, speeches and legacy of Dr. B. R. Ambedkar through a digital archive of historical documents and records.
         </p>
 
         {/* Repositioned Search Bar directly beneath description */}
-        <form onSubmit={handleSearchSubmit} className="pt-1 max-w-lg lg:ml-auto">
+        <form onSubmit={handleSearchSubmit} className="pt-0.5">
           <div className="relative flex items-center">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search writings, speeches, historical events..."
-              className="w-full pl-11 pr-36 py-3 sm:py-3.5 text-xs sm:text-sm bg-[#FBF8F2]/95 backdrop-blur-xs border-2 border-[#DED3C2] rounded-xl text-[#29251F] placeholder-[#827567] focus:outline-none focus:border-[#B96535] shadow-xs transition-all"
+              className="w-full pl-11 pr-36 py-2.5 sm:py-3 text-xs sm:text-sm bg-[#FFFDF9] border border-[#DED3C2] rounded-xl text-[#29251F] placeholder-[#827567] focus:outline-none focus:border-[#B96535] shadow-2xs transition-all"
             />
             <Search className="w-4 h-4 sm:w-5 sm:h-5 text-[#827567] absolute left-3.5 pointer-events-none" />
 

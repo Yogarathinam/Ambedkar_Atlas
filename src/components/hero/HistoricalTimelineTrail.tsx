@@ -57,38 +57,38 @@ const MILESTONES: HistoricalMilestone[] = [
   {
     year: 1947,
     label: 'Drafting Committee',
-    xPct: 71,
-    yPct: 28,
-    svgX: 1022,
-    svgY: 190,
-    cardPlacement: 'top',
+    xPct: 68,
+    yPct: 46,
+    svgX: 980,
+    svgY: 310,
+    cardPlacement: 'bottom',
     visibility: 'flex',
   },
   {
     year: 1950,
     label: 'Republic Constitution',
-    xPct: 84,
-    yPct: 45,
-    svgX: 1210,
-    svgY: 306,
-    cardPlacement: 'bottom',
+    xPct: 83,
+    yPct: 54,
+    svgX: 1195,
+    svgY: 367,
+    cardPlacement: 'top',
     visibility: 'hidden sm:flex',
   },
   {
     year: 1956,
     label: 'Mahaparinirvan',
     xPct: 94,
-    yPct: 36,
+    yPct: 48,
     svgX: 1354,
-    svgY: 245,
-    cardPlacement: 'top',
+    svgY: 326,
+    cardPlacement: 'bottom',
     visibility: 'hidden xl:flex',
   },
 ];
 
-// Continuous flowing cubic bezier trail across the hero background
+// Continuous flowing cubic bezier trail across the hero background, sweeping cleanly beneath top-right card
 const TIMELINE_PATH =
-  'M 40,130 C 120,140 170,165 216,170 C 290,180 340,300 403,299 C 480,298 540,210 619,218 C 690,225 745,330 806,326 C 890,320 950,185 1022,190 C 1090,195 1145,310 1210,306 C 1270,302 1315,248 1354,245 C 1390,242 1415,260 1440,270';
+  'M 40,130 C 120,140 170,165 216,170 C 290,180 340,300 403,299 C 480,298 540,210 619,218 C 690,225 745,330 806,326 C 890,320 930,305 980,310 C 1060,320 1120,370 1195,367 C 1270,364 1315,330 1354,326 C 1390,322 1415,330 1440,335';
 
 interface HistoricalTimelineTrailProps {
   hasVisited: boolean;
