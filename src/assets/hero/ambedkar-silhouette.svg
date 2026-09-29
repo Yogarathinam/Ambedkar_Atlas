@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 700" width="100%" height="100%">
+  <defs>
+    <linearGradient id="suitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3A322A" />
+      <stop offset="40%" stop-color="#231E19" />
+      <stop offset="100%" stop-color="#14110E" />
+    </linearGradient>
+    <linearGradient id="skinTone" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D7A97A" />
+      <stop offset="50%" stop-color="#B88554" />
+      <stop offset="100%" stop-color="#8F5E34" />
+    </linearGradient>
+    <linearGradient id="glassesGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EED599" />
+      <stop offset="100%" stop-color="#A67C34" />
+    </linearGradient>
+    <filter id="archivalGrain" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
+      <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.08 0" />
+      <feComposite in2="SourceGraphic" in="gl" operator="in" />
+    </filter>
+  </defs>
+
+  <g id="figure-group" filter="drop-shadow(0 20px 30px rgba(41,37,31,0.25))">
+    <!-- Body / Suit Coat (Over the shoulder, three-quarters angle) -->
+    <!-- Shoulder closest to camera (left & bottom) -->
+    <path d="M 0,700 L 0,440 C 30,410 70,390 120,380 C 145,375 180,385 210,400 L 260,430 C 310,470 360,540 390,700 Z" fill="url(#suitGrad)" />
+    
+    <!-- Lapel and Collar Details -->
+    <path d="M 170,390 L 195,490 L 230,460 L 210,400 Z" fill="#2D2620" />
+    <path d="M 125,385 L 140,480 L 175,495 L 165,390 Z" fill="#241E19" />
+    
+    <!-- White Dress Shirt & Tie -->
+    <path d="M 155,395 L 180,485 L 195,485 L 175,395 Z" fill="#E8DEC8" />
+    <path d="M 168,415 L 172,500 L 182,495 L 176,415 Z" fill="#803D20" />
+
+    <!-- Neck -->
+    <path d="M 150,320 C 150,350 160,385 175,395 C 190,385 200,350 200,320 Z" fill="url(#skinTone)" />
+    <path d="M 148,340 C 155,370 170,390 175,395 C 160,375 152,350 148,340 Z" fill="#8F5E34" opacity="0.6" />
+
+    <!-- Head and Jawline (Dignified side-three-quarter profile looking rightward) -->
+    <path d="M 120,230 
+             C 120,130 190,80 250,90 
+             C 285,96 315,130 325,175 
+             C 335,215 320,260 295,290 
+             C 275,315 240,340 205,345 
+             C 170,350 135,320 125,280 
+             C 120,260 120,245 120,230 Z" 
+          fill="url(#skinTone)" />
+
+    <!-- Hair (Neat combed archival parting, dark vintage tone) -->
+    <path d="M 125,220 
+             C 120,150 170,90 245,85 
+             C 295,82 320,115 325,160 
+             C 315,150 295,140 270,140 
+             C 230,140 190,165 170,180 
+             C 145,200 135,220 125,240 Z" 
+          fill="#1C1814" />
+
+    <!-- Ear -->
+    <path d="M 155,225 C 145,225 140,245 145,260 C 150,270 160,270 165,260 Z" fill="#B88554" stroke="#8F5E34" stroke-width="1.5" />
+
+    <!-- Iconic Round Vintage Spectacles (Fine Gold Archival Frame) -->
+    <!-- Frame rim 1 (Front/Profile view) -->
+    <ellipse cx="265" cy="205" rx="30" ry="32" fill="none" stroke="url(#glassesGold)" stroke-width="4.5" />
+    <ellipse cx="265" cy="205" rx="27" ry="29" fill="rgba(245,235,221,0.25)" />
+    <!-- Eyeglass bridge and temple -->
+    <path d="M 235,203 Q 225,198 215,202" fill="none" stroke="url(#glassesGold)" stroke-width="3.5" />
+    <path d="M 160,225 Q 210,210 240,205" fill="none" stroke="url(#glassesGold)" stroke-width="3" />
+
+    <!-- Eye & Eyebrow behind glass -->
+    <path d="M 250,178 Q 275,172 295,182" fill="none" stroke="#2B2118" stroke-width="4" stroke-linecap="round" />
+    <ellipse cx="268" cy="204" rx="8" ry="7" fill="#1C1610" />
+    <circle cx="270" cy="202" r="2.5" fill="#FFFFFF" opacity="0.8" />
+
+    <!-- Nose (Strong, intellectual profile) -->
+    <path d="M 292,190 L 312,230 L 295,242" fill="none" stroke="#8F5E34" stroke-width="3" stroke-linejoin="round" />
+
+    <!-- Lips and Expression -->
+    <path d="M 275,270 Q 290,268 302,272" fill="none" stroke="#713F2B" stroke-width="3" stroke-linecap="round" />
+    <path d="M 280,285 Q 292,286 298,284" fill="none" stroke="#8F5E34" stroke-width="2" stroke-linecap="round" />
+
+    <!-- Pocket square & pen hint in coat pocket -->
+    <rect x="50" y="520" width="70" height="6" rx="3" fill="#241E19" />
+    <path d="M 75,505 L 90,520 L 60,520 Z" fill="#E8DEC8" opacity="0.9" />
+    <!-- Golden Fountain Pen Clip -->
+    <rect x="100" y="500" width="5" height="24" rx="2" fill="url(#glassesGold)" />
+  </g>
+</svg>

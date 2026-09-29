@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme {
+  --color-antique-ivory: #F5EBDD;
+  --color-museum-white: #FBF8F2;
+  --color-aged-parchment: #E7D5B9;
+  --color-archival-ink: #29251F;
+  --color-body-text: #51483F;
+  --color-burnt-terracotta: #B96535;
+  --color-dark-walnut: #713F2B;
+  --color-archival-border: #DED3C2;
+  --color-muted-text: #827567;
+  --color-gold-seal: #C89B3C;
+
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-reading: "Newsreader", "Cormorant Garamond", Georgia, serif;
+}
+
+:root {
+  --bg-primary: #F5EBDD;
+  --bg-surface: #FBF8F2;
+  --bg-secondary: #E7D5B9;
+  --text-heading: #29251F;
+  --text-body: #51483F;
+  --text-muted: #827567;
+  --accent-primary: #B96535;
+  --accent-deep: #713F2B;
+  --border-subtle: #DED3C2;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+body {
+  background-color: #F5EBDD;
+  color: #51483F;
+  font-family: "Inter", system-ui, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Paper grain texture */
+.paper-grain {
+  background-image: radial-gradient(rgba(41, 37, 31, 0.04) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+.archival-texture {
+  background-color: #F5EBDD;
+  background-image: 
+    radial-gradient(circle at 100% 100%, rgba(185, 101, 53, 0.03) 0, transparent 40%),
+    radial-gradient(circle at 0% 0%, rgba(113, 63, 43, 0.03) 0, transparent 40%),
+    radial-gradient(rgba(41, 37, 31, 0.03) 1px, transparent 0);
+  background-size: 100% 100%, 100% 100%, 20px 20px;
+}
+
+/* Archival double border */
+.border-double-archival {
+  border-style: double;
+  border-width: 3px;
+  border-color: #DED3C2;
+}
+
+/* Reading font styles */
+.prose-archival {
+  font-family: "Newsreader", "Cormorant Garamond", Georgia, serif;
+  line-height: 1.8;
+  color: #29251F;
+  font-size: 1.125rem;
+}
+
+/* Smooth custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F5EBDD;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #DED3C2;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B96535;
+}
+
+/* Kiosk mode specific overrides */
+.kiosk-mode button,
+.kiosk-mode a {
+  min-height: 52px;
+}
+
+/* Smart TV mode specific focus indicators */
+.tv-mode :focus-visible {
+  outline: 4px solid #B96535 !important;
+  outline-offset: 4px !important;
+  transform: scale(1.02);
+  transition: transform 0.15s ease-in-out;
+}

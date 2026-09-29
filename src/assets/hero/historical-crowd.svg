@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="100%" height="100%">
+  <defs>
+    <!-- Background Archival Sky & Sunburst -->
+    <radialGradient id="skyGlow" cx="60%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#FFF3DF" stop-opacity="0.8"/>
+      <stop offset="40%" stop-color="#EED8B5" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#D7BA8A" stop-opacity="0.2"/>
+    </radialGradient>
+
+    <!-- Depth Layer Gradients -->
+    <linearGradient id="bgHillsColonnade" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#CBB394" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#B29471" stop-opacity="0.6"/>
+    </linearGradient>
+
+    <linearGradient id="distantCrowd" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9A7B58" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#7B5E3C" stop-opacity="0.8"/>
+    </linearGradient>
+
+    <linearGradient id="midCrowd" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#6A4E33" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#46311D" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <linearGradient id="foregroundCrowd" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#382819" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#23170D" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sky Glow -->
+  <rect width="1200" height="600" fill="url(#skyGlow)"/>
+
+  <!-- Distant Architectural Silhouette: Indian Parliament House colonnade & Chhatri pillars -->
+  <g fill="url(#bgHillsColonnade)">
+    <!-- Colonnade Pillars -->
+    <path d="M 200,280 L 1200,280 L 1200,295 L 200,295 Z"/>
+    <g opacity="0.7">
+      <rect x="250" y="220" width="8" height="60" />
+      <rect x="290" y="220" width="8" height="60" />
+      <rect x="330" y="220" width="8" height="60" />
+      <rect x="370" y="220" width="8" height="60" />
+      <rect x="410" y="220" width="8" height="60" />
+      <rect x="450" y="220" width="8" height="60" />
+      <rect x="490" y="220" width="8" height="60" />
+      <rect x="530" y="220" width="8" height="60" />
+      <rect x="570" y="220" width="8" height="60" />
+      <rect x="610" y="220" width="8" height="60" />
+      <rect x="650" y="220" width="8" height="60" />
+      <rect x="690" y="220" width="8" height="60" />
+      <rect x="730" y="220" width="8" height="60" />
+      <rect x="770" y="220" width="8" height="60" />
+      <rect x="810" y="220" width="8" height="60" />
+      <rect x="850" y="220" width="8" height="60" />
+      <rect x="890" y="220" width="8" height="60" />
+      <rect x="930" y="220" width="8" height="60" />
+      <rect x="970" y="220" width="8" height="60" />
+      <rect x="1010" y="220" width="8" height="60" />
+      <rect x="1050" y="220" width="8" height="60" />
+      <rect x="1090" y="220" width="8" height="60" />
+      <rect x="1130" y="220" width="8" height="60" />
+    </g>
+    <!-- Central Dome hint -->
+    <path d="M 620,220 C 620,160 760,160 760,220 Z" opacity="0.5"/>
+  </g>
+
+  <!-- Far Crowd Wave with Historic Banners -->
+  <g fill="url(#distantCrowd)">
+    <!-- Banners -->
+    <path d="M 400,180 L 450,190 L 450,220 L 400,210 Z" opacity="0.7"/>
+    <line x1="400" y1="175" x2="400" y2="290" stroke="#7B5E3C" stroke-width="2"/>
+    <path d="M 720,160 L 780,172 L 780,205 L 720,195 Z" opacity="0.7"/>
+    <line x1="720" y1="155" x2="720" y2="290" stroke="#7B5E3C" stroke-width="2"/>
+    <path d="M 980,170 L 1040,182 L 1040,215 L 980,205 Z" opacity="0.7"/>
+    <line x1="980" y1="165" x2="980" y2="290" stroke="#7B5E3C" stroke-width="2"/>
+
+    <!-- Far heads and silhouettes -->
+    <path d="M 220,320 
+      Q 250,290 280,315 Q 310,285 340,310 Q 370,290 400,320 
+      Q 430,280 460,315 Q 490,290 520,320 Q 550,285 580,310 
+      Q 610,290 640,315 Q 670,280 700,310 Q 730,285 760,315 
+      Q 790,280 820,320 Q 850,285 880,315 Q 910,290 940,320 
+      Q 970,280 1000,315 Q 1030,290 1060,315 Q 1090,285 1120,320 
+      L 1200,350 L 1200,600 L 220,600 Z"/>
+  </g>
+
+  <!-- Midground Crowd Wave (Individual profiles, turbans, raised hands of unity) -->
+  <g fill="url(#midCrowd)">
+    <!-- Raised hands of determination -->
+    <path d="M 520,240 Q 525,210 535,212 Q 545,215 540,245 Z"/>
+    <path d="M 680,230 Q 685,200 695,203 Q 705,206 700,235 Z"/>
+    <path d="M 880,235 Q 885,205 895,208 Q 905,212 900,240 Z"/>
+
+    <!-- Midground Silhouettes -->
+    <path d="M 180,390 
+      C 220,340 250,380 290,340 
+      C 320,350 350,330 380,355 
+      C 420,325 450,360 480,335 
+      C 520,315 550,360 590,325 
+      C 620,345 650,320 680,345 
+      C 720,315 760,355 800,325 
+      C 840,340 880,315 920,345 
+      C 960,320 1000,355 1040,330 
+      C 1080,345 1120,320 1170,350 
+      L 1200,360 L 1200,600 L 180,600 Z"/>
+  </g>
+
+  <!-- Near Foreground Crowd (Rich textural silhouettes, shoulders, respectful audience) -->
+  <g fill="url(#foregroundCrowd)">
+    <path d="M 260,460 
+      C 290,430 320,410 350,430 
+      C 380,400 420,440 460,410 
+      C 500,430 530,390 570,420 
+      C 610,395 650,430 690,405 
+      C 730,435 770,395 810,425 
+      C 850,400 890,435 930,410 
+      C 970,440 1010,400 1060,430 
+      C 1110,410 1150,445 1200,420 
+      L 1200,600 L 260,600 Z"/>
+    
+    <!-- Archival warm ambient highlight accents on shoulders -->
+    <path d="M 350,430 Q 380,415 410,435" stroke="#B96535" stroke-width="2.5" fill="none" opacity="0.4"/>
+    <path d="M 530,410 Q 560,395 590,415" stroke="#B96535" stroke-width="2.5" fill="none" opacity="0.4"/>
+    <path d="M 770,415 Q 800,398 830,420" stroke="#B96535" stroke-width="2.5" fill="none" opacity="0.4"/>
+    <path d="M 970,425 Q 1000,405 1030,428" stroke="#B96535" stroke-width="2.5" fill="none" opacity="0.4"/>
+  </g>
+</svg>
