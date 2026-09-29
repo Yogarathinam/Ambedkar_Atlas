@@ -474,15 +474,17 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
   }, [animatePageCompletion, currentSpreadIndex, totalSpreads, turnProgress, syncScrollToSpread]);
 
   // Events for current and adjacent spreads
-  const currentEvent = currentSpreadIndex >= 1 && currentSpreadIndex <= totalSpreads
-    ? events[currentSpreadIndex - 1]
-    : events[0]; // Preload Milestone 1 when closed
+  const currentEvent = events && events.length > 0
+    ? (currentSpreadIndex >= 1 && currentSpreadIndex <= totalSpreads
+        ? events[currentSpreadIndex - 1]
+        : events[0])
+    : null;
 
-  const nextEvent = currentSpreadIndex + 1 <= totalSpreads
+  const nextEvent = events && currentSpreadIndex + 1 <= totalSpreads
     ? events[currentSpreadIndex]
     : null;
 
-  const prevEvent = currentSpreadIndex - 2 >= 0
+  const prevEvent = events && currentSpreadIndex - 2 >= 0
     ? events[currentSpreadIndex - 2]
     : null;
 
@@ -585,7 +587,7 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
               <div className="relative w-full h-full rounded-2xl overflow-hidden bg-[#FAF4EA] flex shadow-inner">
                 
                 {/* Active Event Spread or Preloaded Milestone 1 under closed cover */}
-                {currentSpreadIndex <= totalSpreads && (
+                {currentSpreadIndex <= totalSpreads && currentEvent && (
                   <BookSpread
                     event={currentEvent}
                     pageNumber={Math.max(1, currentSpreadIndex)}

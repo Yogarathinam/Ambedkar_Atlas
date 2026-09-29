@@ -159,13 +159,27 @@ export const TimelinePage: React.FC = () => {
   if (timelineViewMode === '3d-book') {
     return (
       <div className="w-full min-h-screen">
-        <Historical3DBook
-          events={allEvents}
-          selectedYear={activeJumpYear}
-          onSelectEvent={handleSelectEvent}
-          onToggleViewMode={setTimelineViewMode}
-          viewMode={timelineViewMode}
-        />
+        {allEvents.length > 0 ? (
+          <Historical3DBook
+            events={allEvents}
+            selectedYear={activeJumpYear}
+            onSelectEvent={handleSelectEvent}
+            onToggleViewMode={setTimelineViewMode}
+            viewMode={timelineViewMode}
+          />
+        ) : (
+          <div
+            className="w-full h-screen flex flex-col items-center justify-center select-none"
+            style={{
+              backgroundImage: `radial-gradient(ellipse at 50% 50%, rgba(18,12,8,0.2) 0%, rgba(10,6,4,0.62) 100%), url('https://i.pinimg.com/736x/db/57/c4/db57c43bb1b847a6547f7fa37c3802da.jpg'), url('/wood-texture.jpg')`,
+              backgroundColor: '#24160E',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            <div className="w-10 h-10 rounded-full border-2 border-[#D4AF37] border-t-transparent animate-spin" />
+          </div>
+        )}
 
         {/* Floating Return to Top Button */}
         {showScrollTop && (

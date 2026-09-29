@@ -19,7 +19,8 @@ export const BookSpread: React.FC<BookSpreadProps> = ({
   totalPages,
   onOpenProvenance,
 }) => {
-  const visual = EVENT_VISUAL_MAP[event.id] || DEFAULT_EVENT_VISUAL;
+  if (!event) return null;
+  const visual = (event.id && EVENT_VISUAL_MAP[event.id]) || DEFAULT_EVENT_VISUAL;
   const leftPageNum = pageNumber * 2 - 1;
   const rightPageNum = pageNumber * 2;
 
