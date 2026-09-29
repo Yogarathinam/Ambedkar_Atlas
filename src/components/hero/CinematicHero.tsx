@@ -131,92 +131,116 @@ export const CinematicHero: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Layer 3: Editorial Typography & Actions (Right Side, Compact & Clear) */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-30 py-10 sm:py-14 md:py-16">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
-          
-          {/* Spacer to guarantee Ambedkar's silhouette on the left is never obstructed */}
-          <div className="hidden lg:block lg:w-5/12 xl:w-5/12 shrink-0 pointer-events-none" />
-
-          {/* Clean Editorial Content Column (Seamless, No Box/Card, Compact) */}
-          <motion.div
-            className="w-full lg:w-7/12 xl:w-7/12 max-w-2xl lg:ml-auto space-y-4 sm:space-y-5"
-            initial={hasVisited ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: animDuration, delay: staggerDelay * 2, ease: 'easeOut' }}
+      {/* Layer 3: Above-Ambedkar Action Hub with Museum Trail Lines (Top Left) */}
+      <motion.div
+        className="relative lg:absolute top-4 sm:top-6 lg:top-10 left-4 sm:left-6 lg:left-12 z-30 max-w-sm sm:max-w-md pt-4 sm:pt-6 lg:pt-0"
+        initial={hasVisited ? { opacity: 1, y: 0 } : { opacity: 0, y: -15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: animDuration, delay: staggerDelay, ease: 'easeOut' }}
+      >
+        {/* Action Buttons Cluster */}
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 bg-[#FBF8F2]/90 backdrop-blur-xs p-1.5 sm:p-2 rounded-2xl border border-[#DED3C2] shadow-xs">
+          <button
+            onClick={() => navigate('/archive')}
+            className="px-3.5 sm:px-4 py-2 bg-[#29251F] hover:bg-[#3E3830] text-[#FBF8F2] text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-xs flex items-center gap-2 group"
           >
-            {/* Display Heading: 1st line Archival Ink, 2nd line Burnt Terracotta */}
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold text-[#29251F] tracking-tight leading-[1.14]">
-              Architect of Equality. <br />
-              <span className="text-[#B96535]">Voice of the Republic.</span>
-            </h1>
+            <BookOpen className="w-3.5 h-3.5 text-[#B96535] group-hover:scale-110 transition-transform" />
+            <span>Explore Archive</span>
+          </button>
 
-            {/* Concise Editorial Intro */}
-            <p className="text-base sm:text-lg text-[#51483F] leading-relaxed font-normal">
-              Explore the writings, speeches and legacy of Dr. B. R. Ambedkar through a digital archive of historical documents and records.
-            </p>
+          <button
+            onClick={() => navigate('/timeline')}
+            className="px-3.5 sm:px-4 py-2 bg-[#E7D5B9]/90 hover:bg-[#E7D5B9] text-[#29251F] text-xs sm:text-sm font-semibold rounded-xl transition-all border border-[#DED3C2] flex items-center gap-2 group"
+          >
+            <Clock className="w-3.5 h-3.5 text-[#713F2B] group-hover:scale-110 transition-transform" />
+            <span>Explore Timeline</span>
+          </button>
+        </div>
 
-            {/* Search Bar with Shorter Placeholder & Connected Mic */}
-            <form onSubmit={handleSearchSubmit} className="pt-0.5">
-              <div className="relative flex items-center max-w-xl">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search writings, speeches, historical events..."
-                  className="w-full pl-11 pr-36 py-3 sm:py-3.5 text-sm sm:text-base bg-[#FBF8F2] border-2 border-[#DED3C2] rounded-xl text-[#29251F] placeholder-[#827567] focus:outline-none focus:border-[#B96535] shadow-xs transition-all"
-                />
-                <Search className="w-5 h-5 text-[#827567] absolute left-3.5 pointer-events-none" />
+        {/* Museum Leader / Trail Lines Connecting Down to Dr. Ambedkar */}
+        <div className="relative pl-6 pt-2 hidden lg:flex flex-col items-start pointer-events-none select-none">
+          <svg width="150" height="95" viewBox="0 0 150 95" fill="none" className="overflow-visible">
+            {/* Trail Line Path */}
+            <path
+              d="M 12 0 L 12 24 L 58 56 L 58 90"
+              stroke="#B96535"
+              strokeWidth="1.5"
+              strokeDasharray="4 3"
+              strokeOpacity="0.85"
+            />
+            {/* Junction Nodes */}
+            <circle cx="12" cy="0" r="2.5" fill="#713F2B" />
+            <circle cx="12" cy="24" r="2.5" fill="#B96535" />
+            <circle cx="58" cy="56" r="2.5" fill="#713F2B" />
+            
+            {/* Terminal Target Ring directly above Ambedkar's silhouette */}
+            <circle cx="58" cy="90" r="5" stroke="#B96535" strokeWidth="1.5" fill="#F5EBDD" />
+            <circle cx="58" cy="90" r="2" fill="#B96535" />
+          </svg>
 
-                <div className="absolute right-2 flex items-center gap-1.5">
-                  {/* Voice Search Microphone Button */}
-                  <button
-                    type="button"
-                    onClick={handleVoiceToggle}
-                    title={isListening ? 'Stop listening' : 'Search by voice'}
-                    className={`p-2 rounded-lg transition-colors flex items-center justify-center ${
-                      isListening
-                        ? 'bg-red-600 text-white animate-pulse'
-                        : 'text-[#827567] hover:text-[#B96535] hover:bg-[#E7D5B9]/60'
-                    }`}
-                  >
-                    {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                  </button>
+          {/* Archival metadata tag alongside trail line */}
+          <div className="absolute left-20 top-12 text-[10px] font-mono tracking-widest uppercase text-[#713F2B] bg-[#FBF8F2]/90 px-2 py-0.5 rounded-full border border-[#DED3C2] shadow-xs">
+            Primary Figure • 1891–1956
+          </div>
+        </div>
+      </motion.div>
 
-                  <button
-                    type="submit"
-                    className="px-3.5 py-2 bg-[#B96535] hover:bg-[#713F2B] text-white text-xs sm:text-sm font-semibold rounded-lg transition-colors flex items-center gap-1 shadow-xs"
-                  >
-                    <span>Explore</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            </form>
+      {/* Layer 4: Top-Right Editorial & Repositioned Search Hub (Occupying empty space above crowd) */}
+      <motion.div
+        className="relative lg:absolute top-4 sm:top-6 lg:top-10 right-4 sm:right-6 lg:right-12 xl:right-16 z-30 max-w-lg lg:max-w-xl text-left lg:text-right space-y-3 sm:space-y-4 px-4 sm:px-6 lg:px-0 pt-4 sm:pt-6 lg:pt-0"
+        initial={hasVisited ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: animDuration, delay: staggerDelay * 1.5, ease: 'easeOut' }}
+      >
+        {/* Main Heading: 1st line Archival Ink, 2nd line Burnt Terracotta */}
+        <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold text-[#29251F] tracking-tight leading-[1.12]">
+          Architect of Equality. <br />
+          <span className="text-[#B96535]">Voice of the Republic.</span>
+        </h1>
 
-            {/* Primary Action Buttons: Explore Archive & Explore Timeline */}
-            <div className="flex flex-wrap items-center gap-3 pt-1">
+        {/* Short, Readable Description */}
+        <p className="text-sm sm:text-base lg:text-lg text-[#51483F] leading-relaxed max-w-lg lg:ml-auto font-normal">
+          Explore the writings, speeches and legacy of Dr. B. R. Ambedkar through a digital archive of historical documents and records.
+        </p>
+
+        {/* Repositioned Search Bar directly beneath description */}
+        <form onSubmit={handleSearchSubmit} className="pt-1 max-w-lg lg:ml-auto">
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search writings, speeches, historical events..."
+              className="w-full pl-11 pr-36 py-3 sm:py-3.5 text-xs sm:text-sm bg-[#FBF8F2]/95 backdrop-blur-xs border-2 border-[#DED3C2] rounded-xl text-[#29251F] placeholder-[#827567] focus:outline-none focus:border-[#B96535] shadow-xs transition-all"
+            />
+            <Search className="w-4 h-4 sm:w-5 sm:h-5 text-[#827567] absolute left-3.5 pointer-events-none" />
+
+            <div className="absolute right-2 flex items-center gap-1.5">
+              {/* Voice Search Microphone Button */}
               <button
-                onClick={() => navigate('/archive')}
-                className="px-5 py-2.5 bg-[#29251F] hover:bg-[#3E3830] text-[#FBF8F2] text-sm font-semibold rounded-lg transition-all shadow-xs flex items-center gap-2"
+                type="button"
+                onClick={handleVoiceToggle}
+                title={isListening ? 'Stop listening' : 'Search by voice'}
+                className={`p-1.5 sm:p-2 rounded-lg transition-colors flex items-center justify-center ${
+                  isListening
+                    ? 'bg-red-600 text-white animate-pulse'
+                    : 'text-[#827567] hover:text-[#B96535] hover:bg-[#E7D5B9]/60'
+                }`}
               >
-                <BookOpen className="w-4 h-4 text-[#B96535]" />
-                <span>Explore Archive</span>
+                {isListening ? <MicOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
               </button>
 
               <button
-                onClick={() => navigate('/timeline')}
-                className="px-5 py-2.5 bg-[#E7D5B9]/80 hover:bg-[#E7D5B9] text-[#29251F] text-sm font-semibold rounded-lg transition-all border border-[#DED3C2] flex items-center gap-2"
+                type="submit"
+                className="px-3 py-1.5 sm:px-3.5 sm:py-2 bg-[#B96535] hover:bg-[#713F2B] text-white text-xs sm:text-sm font-semibold rounded-lg transition-colors flex items-center gap-1 shadow-xs"
               >
-                <Clock className="w-4 h-4 text-[#713F2B]" />
-                <span>Explore Timeline</span>
+                <span>Explore</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
-
-          </motion.div>
-
-        </div>
-      </div>
+          </div>
+        </form>
+      </motion.div>
     </section>
   );
 };
