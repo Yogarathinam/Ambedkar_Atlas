@@ -1,4 +1,4 @@
-import ambedkarPortraitPng from './ambedkar-portrait.png';
+import ambedkarPortraitWebp from './ambedkar-portrait.webp';
 import audienceCrowdSvg from './ambedkar-atlas-modern-audience.svg';
 import parchmentBackdropSvg from './parchment-backdrop.svg';
 
@@ -10,7 +10,7 @@ export interface HeroAssetsConfig {
 }
 
 export const HERO_ASSETS: HeroAssetsConfig = {
-  ambedkarPortrait: ambedkarPortraitPng,
+  ambedkarPortrait: ambedkarPortraitWebp,
   historicalCrowd: audienceCrowdSvg,
   backdrop: parchmentBackdropSvg,
   isCustomPortrait: true,

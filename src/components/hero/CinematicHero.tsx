@@ -67,7 +67,7 @@ export const CinematicHero: React.FC = () => {
 
       {/* Layer 1: Crowd SVG Background (Subtle ambient looped sway) */}
       <motion.div
-        className="absolute bottom-0 right-0 w-full sm:w-[90%] md:w-[85%] lg:w-[78%] xl:w-[75%] h-[58%] sm:h-[68%] md:h-[75%] pointer-events-none z-10"
+        className="absolute bottom-0 right-0 w-full sm:w-[90%] md:w-[85%] lg:w-[78%] xl:w-[75%] h-[58%] sm:h-[68%] md:h-[75%] pointer-events-none z-10 transform-gpu will-change-transform"
         initial={hasVisited ? { opacity: 0.95, y: 0 } : { opacity: 0, y: 25 }}
         animate={
           prefersReducedMotion
@@ -91,7 +91,7 @@ export const CinematicHero: React.FC = () => {
           <img
             src={HERO_ASSETS.historicalCrowd}
             alt="Historical Gathering Audience"
-            className="w-full h-full object-contain object-bottom filter sepia-[0.25] opacity-90"
+            className="w-full h-full object-contain object-bottom opacity-85"
           />
           {/* Bottom fade gradient to blend seamlessly into Antique Ivory background */}
           <div className="absolute inset-x-0 bottom-0 h-16 sm:h-24 bg-gradient-to-t from-[#F5EBDD] via-[#F5EBDD]/80 to-transparent pointer-events-none" />
@@ -99,9 +99,9 @@ export const CinematicHero: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Layer 2: Dr. B. R. Ambedkar Transparent PNG Foreground (Subtle majestic breathing loop) */}
+      {/* Layer 2: Dr. B. R. Ambedkar Transparent Foreground (Subtle majestic breathing loop) */}
       <motion.div
-        className="absolute bottom-0 left-0 sm:left-2 md:left-4 lg:left-6 w-[300px] sm:w-[400px] md:w-[500px] lg:w-[600px] xl:w-[680px] h-[85%] sm:h-[95%] lg:h-[105%] origin-bottom-left scale-100 sm:scale-105 lg:scale-[1.22] xl:scale-[1.30] pointer-events-none z-20"
+        className="absolute bottom-0 left-0 sm:left-2 md:left-4 lg:left-6 w-[300px] sm:w-[400px] md:w-[500px] lg:w-[600px] xl:w-[680px] h-[85%] sm:h-[95%] lg:h-[105%] origin-bottom-left scale-100 sm:scale-105 lg:scale-[1.22] xl:scale-[1.30] pointer-events-none z-20 transform-gpu will-change-transform"
         initial={hasVisited ? { opacity: 1, x: 0 } : { opacity: 0, x: -35 }}
         animate={
           prefersReducedMotion
@@ -128,7 +128,7 @@ export const CinematicHero: React.FC = () => {
           <img
             src={HERO_ASSETS.ambedkarPortrait}
             alt="Dr. B. R. Ambedkar"
-            className="w-full h-full object-contain object-bottom filter drop-shadow-[0_12px_24px_rgba(41,37,31,0.22)]"
+            className="w-full h-full object-contain object-bottom"
           />
           {/* Subtle bottom fade so base dissolves naturally */}
           <div className="absolute inset-x-0 bottom-0 h-8 sm:h-12 bg-gradient-to-t from-[#F5EBDD] to-transparent pointer-events-none" />

@@ -202,7 +202,7 @@ export const HistoricalTimelineTrail: React.FC<HistoricalTimelineTrailProps> = (
             ease: 'easeOut',
           }}
         >
-          <div className="bg-[#FBF8F2]/75 hover:bg-[#FBF8F2]/90 backdrop-blur-[2px] border border-[#DED3C2]/70 shadow-[0_2px_8px_rgba(41,37,31,0.03)] px-2.5 py-1 rounded-md transition-all">
+          <div className="bg-[#FBF8F2]/90 border border-[#DED3C2]/80 shadow-[0_2px_8px_rgba(41,37,31,0.03)] px-2.5 py-1 rounded-md transition-all">
             <div className="flex items-center gap-1.5">
               <span className="font-serif font-bold text-xs sm:text-[13px] text-[#713F2B] tracking-tight leading-none">
                 {m.year}
