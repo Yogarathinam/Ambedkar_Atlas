@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Bookmark, Menu, X, BookOpen, Clock, Bot, Touchpad, HelpCircle } from 'lucide-react';
 import { useBookmarks } from '../../context/BookmarkContext';
+import ambedkarLogo from '../../assets/hero/image.png';
 
 export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -57,11 +58,18 @@ export const Header: React.FC = () => {
             to="/"
             className="flex items-center gap-2.5 sm:gap-3 group focus:outline-none focus:ring-1 focus:ring-[#B96535] rounded-md shrink-0"
           >
-            <img 
-              src="/seal.svg" 
-              alt="Archival Seal" 
-              className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 transition-transform duration-300 group-hover:rotate-6"
-            />
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center">
+              <img 
+                src="/seal.svg" 
+                alt="Archival Seal" 
+                className="w-full h-full shrink-0 transition-transform duration-300 group-hover:rotate-6"
+              />
+              <img
+                src={ambedkarLogo}
+                alt="Dr. B. R. Ambedkar"
+                className="absolute inset-0 w-full h-full object-contain pointer-events-none transition-transform duration-300 group-hover:scale-105"
+              />
+            </div>
             <div className="flex flex-col">
               <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-[#29251F] group-hover:text-[#B96535] transition-colors leading-tight">
                 AMBEDKAR ATLAS

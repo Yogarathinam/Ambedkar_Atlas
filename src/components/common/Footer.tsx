@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, BookOpen, Compass, ExternalLink, Heart } from 'lucide-react';
+import ambedkarLogo from '../../assets/hero/image.png';
 
 export const Footer: React.FC = () => {
   return (
@@ -12,7 +13,14 @@ export const Footer: React.FC = () => {
           {/* Brand & Purpose */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <img src="/seal.svg" alt="Seal" className="w-10 h-10 invert brightness-90" />
+              <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
+                <img src="/seal.svg" alt="Seal" className="w-full h-full invert brightness-90 opacity-80" />
+                <img
+                  src={ambedkarLogo}
+                  alt="Dr. B. R. Ambedkar"
+                  className="absolute inset-0 w-full h-full object-contain pointer-events-none scale-105"
+                />
+              </div>
               <div>
                 <span className="font-serif text-2xl font-bold tracking-tight text-[#FBF8F2] block">
                   AMBEDKAR ATLAS
