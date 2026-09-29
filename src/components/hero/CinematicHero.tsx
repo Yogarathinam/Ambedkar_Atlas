@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Search, ArrowRight, BookOpen, Clock, Mic, MicOff, CheckCircle2 } from 'lucide-react';
+import { Search, ArrowRight, BookOpen, Clock, Mic, MicOff } from 'lucide-react';
 import { HERO_ASSETS } from '../../assets/hero/heroAssets';
 import { useVoiceSearch } from '../../hooks/useVoiceSearch';
 import { HistoricalTimelineTrail } from './HistoricalTimelineTrail';
@@ -144,7 +144,7 @@ export const CinematicHero: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: animDuration, delay: staggerDelay, ease: 'easeOut' }}
       >
-        <div className="flex items-center gap-2.5 bg-white/70 backdrop-blur-xl backdrop-saturate-150 p-2 rounded-2xl border border-white/80 shadow-[0_10px_30px_rgba(41,37,31,0.08),inset_0_1px_1px_rgba(255,255,255,0.9)]">
+        <div className="flex items-center gap-2.5 bg-white/25 hover:bg-white/35 backdrop-blur-2xl backdrop-saturate-[180%] p-2 rounded-2xl border border-white/50 shadow-[0_10px_30px_rgba(41,37,31,0.06),inset_0_1px_1px_rgba(255,255,255,0.7)] transition-colors">
           <button
             onClick={() => navigate('/archive')}
             className="px-4 py-2 bg-[#29251F]/90 hover:bg-[#29251F] text-[#FBF8F2] text-xs sm:text-sm font-semibold rounded-xl transition-all shadow-xs flex items-center gap-2 group cursor-pointer"
@@ -155,7 +155,7 @@ export const CinematicHero: React.FC = () => {
 
           <button
             onClick={() => navigate('/timeline')}
-            className="px-4 py-2 bg-white/80 hover:bg-white text-[#29251F] text-xs sm:text-sm font-semibold rounded-xl transition-all border border-white/80 shadow-2xs flex items-center gap-2 group cursor-pointer"
+            className="px-4 py-2 bg-white/50 hover:bg-white/80 text-[#29251F] text-xs sm:text-sm font-semibold rounded-xl transition-all border border-white/60 shadow-2xs flex items-center gap-2 group cursor-pointer"
           >
             <Clock className="w-3.5 h-3.5 text-[#713F2B] group-hover:scale-110 transition-transform" />
             <span>Explore Timeline</span>
@@ -163,40 +163,29 @@ export const CinematicHero: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* MAIN HERO CARD: Elegant glassmorphic card with reduced concise text and optical frosted sheen */}
+      {/* MAIN HERO CARD: Pure transparent glass with crystal reflections, no badges, and concise text */}
       <motion.div
-        className="relative w-full max-w-xl mx-auto lg:mx-0 lg:absolute lg:top-8 lg:right-10 xl:right-14 z-30 text-left space-y-4 p-5 sm:p-7 rounded-3xl bg-white/70 backdrop-blur-xl backdrop-saturate-150 border border-white/80 shadow-[0_20px_50px_rgba(41,37,31,0.12),inset_0_1px_1px_0_rgba(255,255,255,0.9),inset_0_0_0_1px_rgba(222,211,194,0.35)] my-auto overflow-hidden transition-all"
+        className="relative w-full max-w-xl mx-auto lg:mx-0 lg:absolute lg:top-8 lg:right-10 xl:right-14 z-30 text-left space-y-4 p-5 sm:p-7 rounded-3xl bg-white/20 sm:bg-white/[0.22] hover:bg-white/[0.28] backdrop-blur-2xl backdrop-saturate-[180%] border border-white/50 shadow-[0_20px_50px_rgba(41,37,31,0.09),inset_0_1.5px_1px_0_rgba(255,255,255,0.75),inset_0_-1px_1px_0_rgba(255,255,255,0.2)] my-auto overflow-hidden transition-all duration-300"
         initial={hasVisited ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: animDuration, delay: staggerDelay * 1.5, ease: 'easeOut' }}
       >
-        {/* Subtle Frosted Glass Reflection & Sheen */}
-        <div className="absolute -top-24 -right-24 w-60 h-60 bg-gradient-to-br from-white/70 via-white/20 to-transparent rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-gradient-to-tr from-[#B96535]/10 via-[#E7D5B9]/25 to-transparent rounded-full blur-2xl pointer-events-none" />
+        {/* Crystal Glass Diagonal Light Beam & Optical Refraction */}
+        <div className="absolute -top-32 -right-32 w-72 h-72 bg-gradient-to-br from-white/40 via-white/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-56 h-56 bg-gradient-to-tr from-[#B96535]/15 via-[#E7D5B9]/20 to-transparent rounded-full blur-3xl pointer-events-none" />
 
-        {/* Eyebrow badge */}
-        <div className="flex items-center gap-2 relative z-10">
-          <span className="px-3 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-[#B96535]/90 text-white shadow-2xs backdrop-blur-xs">
-            Digital Heritage Archive
-          </span>
-          <span className="text-[11px] text-[#713F2B] font-semibold flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/60 border border-white/80 backdrop-blur-md shadow-2xs">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Official MEA Repository</span>
-          </span>
-        </div>
-
-        {/* Main Heading */}
-        <h1 className="relative z-10 font-serif text-2xl sm:text-3xl md:text-4xl lg:text-[2.65rem] font-bold text-[#29251F] tracking-tight leading-[1.14]">
+        {/* Main Heading (No badges above it) */}
+        <h1 className="relative z-10 font-serif text-2xl sm:text-3xl md:text-4xl lg:text-[2.65rem] font-bold text-[#1E1A16] tracking-tight leading-[1.14] drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)]">
           Architect of Equality. <br />
           <span className="text-[#B96535]">Voice of the Republic.</span>
         </h1>
 
-        {/* Concise Description (Reduced text amount) */}
-        <p className="relative z-10 text-xs sm:text-sm md:text-base text-[#51483F] leading-relaxed font-normal">
+        {/* Concise Description */}
+        <p className="relative z-10 text-xs sm:text-sm md:text-base text-[#3E3830] font-medium leading-relaxed drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]">
           Explore Dr. B. R. Ambedkar's writings, speeches, and constitutional legacy across 60 verified national volumes.
         </p>
 
-        {/* Search Bar: Frosted glass search input container */}
+        {/* Search Bar: Frosted transparent glass input */}
         <form onSubmit={handleSearchSubmit} className="pt-1 relative z-10">
           <div className="relative flex items-center group/search">
             <input
@@ -204,9 +193,9 @@ export const CinematicHero: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search treatises, speeches, volumes..."
-              className="w-full pl-9 sm:pl-11 pr-24 sm:pr-36 py-2.5 sm:py-3 text-xs sm:text-sm bg-white/80 hover:bg-white/95 focus:bg-white border border-white/90 focus:border-[#B96535]/80 rounded-xl text-[#29251F] placeholder-[#827567] focus:outline-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.03),0_2px_8px_rgba(41,37,31,0.04)] backdrop-blur-md transition-all"
+              className="w-full pl-9 sm:pl-11 pr-24 sm:pr-36 py-2.5 sm:py-3 text-xs sm:text-sm bg-white/45 hover:bg-white/60 focus:bg-white/85 border border-white/60 focus:border-[#B96535]/80 rounded-xl text-[#1E1A16] placeholder-[#6E6356] focus:outline-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.02),0_4px_16px_rgba(0,0,0,0.03)] backdrop-blur-xl transition-all"
             />
-            <Search className="w-4 h-4 sm:w-5 sm:h-5 text-[#827567] absolute left-3 pointer-events-none group-focus-within/search:text-[#B96535] transition-colors" />
+            <Search className="w-4 h-4 sm:w-5 sm:h-5 text-[#6E6356] absolute left-3 pointer-events-none group-focus-within/search:text-[#B96535] transition-colors" />
 
             <div className="absolute right-1.5 sm:right-2 flex items-center gap-1 sm:gap-1.5">
               {/* Voice Search Microphone Button */}
@@ -218,7 +207,7 @@ export const CinematicHero: React.FC = () => {
                   className={`p-1.5 sm:p-2 rounded-lg transition-colors flex items-center justify-center cursor-pointer ${
                     isListening
                       ? 'bg-red-600 text-white animate-pulse'
-                      : 'text-[#827567] hover:text-[#B96535] hover:bg-[#E7D5B9]/60'
+                      : 'text-[#6E6356] hover:text-[#B96535] hover:bg-white/50'
                   }`}
                 >
                   {isListening ? <MicOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Mic className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
@@ -237,7 +226,7 @@ export const CinematicHero: React.FC = () => {
         </form>
 
         {/* Mobile & Tablet Quick Actions (Visible on small screens, integrated seamlessly) */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 lg:hidden border-t border-white/60 text-xs relative z-10">
+        <div className="flex flex-wrap items-center gap-2 pt-2 lg:hidden border-t border-white/40 text-xs relative z-10">
           <button
             onClick={() => navigate('/archive')}
             className="flex-1 py-2 px-3 bg-[#29251F]/90 hover:bg-[#29251F] text-[#FBF8F2] font-semibold rounded-xl text-center flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs backdrop-blur-sm"
@@ -248,7 +237,7 @@ export const CinematicHero: React.FC = () => {
 
           <button
             onClick={() => navigate('/timeline')}
-            className="flex-1 py-2 px-3 bg-white/70 hover:bg-white/90 text-[#713F2B] font-semibold rounded-xl text-center flex items-center justify-center gap-1.5 transition-colors border border-white/80 cursor-pointer shadow-xs backdrop-blur-sm"
+            className="flex-1 py-2 px-3 bg-white/40 hover:bg-white/70 text-[#29251F] font-semibold rounded-xl text-center flex items-center justify-center gap-1.5 transition-colors border border-white/50 cursor-pointer shadow-xs backdrop-blur-sm"
           >
             <Clock className="w-3.5 h-3.5 text-[#B96535]" />
             <span>Timeline</span>
