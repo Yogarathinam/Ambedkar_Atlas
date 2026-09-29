@@ -3,7 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { 
   FileText, BookOpen, Search, ZoomIn, ZoomOut, Maximize2, 
   ChevronLeft, ChevronRight, ExternalLink, Globe, Copy, Check, 
-  RotateCcw, ListFilter, AlertCircle, Sparkles, Download, ArrowUpRight
+  RotateCcw, ListFilter, AlertCircle, Sparkles, Download, ArrowUpRight,
+  ArrowRight, ArrowUp, AlignLeft, BookMarked
 } from 'lucide-react';
 import { MeaVolumeRecord, ExtractedPage } from '../../data/mea/ingestedVolumes';
 import { EIGHTH_SCHEDULE_LANGUAGES } from '../../data/indianLanguages';
@@ -18,17 +19,33 @@ interface InteractivePdfViewerProps {
 
 export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
   volume,
-  initialPage = 1,
+  initialPage,
   initialQuery = '',
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const urlPage = parseInt(searchParams.get('page') || `${initialPage}`, 10) || 1;
+  const urlPageParam = searchParams.get('page');
   const urlQuery = searchParams.get('q') || initialQuery || '';
   const urlViewMode = searchParams.get('view');
 
-  const [currentPage, setCurrentPage] = useState<number>(urlPage);
-  const [pageInput, setPageInput] = useState<string>(`${urlPage}`);
+  // Determine starting page intelligently: explicit URL param > passed initialPage > first substantive chapter
+  const resolvedInitialPage = useMemo(() => {
+    if (urlPageParam) {
+      const p = parseInt(urlPageParam, 10);
+      if (!isNaN(p)) return p;
+    }
+    if (initialPage && initialPage > 1) {
+      return initialPage;
+    }
+    const firstSubstantiveChapter = volume.tableOfContents?.find(
+      (c) => c.part !== 'Introductory' && !c.title.toLowerCase().includes('front matter')
+    ) || volume.tableOfContents?.[0];
+    return firstSubstantiveChapter?.startPage || 1;
+  }, [urlPageParam, initialPage, volume.tableOfContents]);
+
+  const [currentPage, setCurrentPage] = useState<number>(resolvedInitialPage);
+  const [pageInput, setPageInput] = useState<string>(`${resolvedInitialPage}`);
   const [viewMode, setViewMode] = useState<'pdf' | 'text'>(urlViewMode === 'pdf' ? 'pdf' : 'text');
+  const [readingMode, setReadingMode] = useState<'chapter' | 'page'>('chapter');
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [tocOpen, setTocOpen] = useState<boolean>(true);
   
@@ -50,11 +67,14 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
 
   // Sync state if URL page changes
   useEffect(() => {
-    if (urlPage && urlPage !== currentPage) {
-      setCurrentPage(urlPage);
-      setPageInput(`${urlPage}`);
+    if (urlPageParam) {
+      const p = parseInt(urlPageParam, 10);
+      if (!isNaN(p) && p !== currentPage) {
+        setCurrentPage(p);
+        setPageInput(`${p}`);
+      }
     }
-  }, [urlPage]);
+  }, [urlPageParam]);
 
   // Sync state if URL query changes
   useEffect(() => {
@@ -102,6 +122,27 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
     );
   }, [volume.tableOfContents, currentPage, totalPages]);
 
+  // All extracted pages belonging to current active chapter
+  const activeChapterPages = useMemo(() => {
+    if (!volume.extractedPages || volume.extractedPages.length === 0 || !activeTocChapter) return [];
+    const filtered = volume.extractedPages.filter((p) => {
+      const matchesTitle =
+        p.chapterTitle &&
+        (activeTocChapter.title.toLowerCase().includes(p.chapterTitle.toLowerCase()) ||
+          p.chapterTitle.toLowerCase().includes(activeTocChapter.title.toLowerCase().slice(0, 15)));
+      const inPageRange =
+        p.pdfPageNumber >= activeTocChapter.startPage &&
+        (!activeTocChapter.endPage || p.pdfPageNumber <= activeTocChapter.endPage);
+      return matchesTitle || inPageRange;
+    });
+
+    return [...filtered].sort((a, b) => a.pdfPageNumber - b.pdfPageNumber);
+  }, [volume.extractedPages, activeTocChapter]);
+
+  const totalChapterWords = useMemo(() => {
+    return activeChapterPages.reduce((acc, p) => acc + (p.wordCount || 0), 0);
+  }, [activeChapterPages]);
+
   // Find extracted page text if available with intelligent chapter fallback
   const extractedPageData: ExtractedPage | undefined = useMemo(() => {
     if (!volume.extractedPages || volume.extractedPages.length === 0) return undefined;
@@ -113,22 +154,9 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
     }
 
     // 2. If exact page is a title/divider page or has minimal text, find the first available page of this chapter
-    if (activeTocChapter) {
-      const chapterPages = volume.extractedPages.filter((p) => {
-        const matchesTitle =
-          p.chapterTitle &&
-          (activeTocChapter.title.toLowerCase().includes(p.chapterTitle.toLowerCase()) ||
-            p.chapterTitle.toLowerCase().includes(activeTocChapter.title.toLowerCase().slice(0, 15)));
-        const inPageRange =
-          p.pdfPageNumber >= activeTocChapter.startPage &&
-          (!activeTocChapter.endPage || p.pdfPageNumber <= activeTocChapter.endPage);
-        return matchesTitle || inPageRange;
-      });
-
-      if (chapterPages.length > 0) {
-        const candidate = chapterPages.find((p) => p.pdfPageNumber >= currentPage) || chapterPages[0];
-        if (candidate) return candidate;
-      }
+    if (activeTocChapter && activeChapterPages.length > 0) {
+      const candidate = activeChapterPages.find((p) => p.pdfPageNumber >= currentPage) || activeChapterPages[0];
+      if (candidate) return candidate;
     }
 
     // 3. Fallback to closest available extracted page
@@ -136,7 +164,7 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
       (a, b) => Math.abs(a.pdfPageNumber - currentPage) - Math.abs(b.pdfPageNumber - currentPage)
     );
     return sorted[0];
-  }, [volume.extractedPages, currentPage, activeTocChapter]);
+  }, [volume.extractedPages, currentPage, activeTocChapter, activeChapterPages]);
 
   // In-document search matches
   const searchMatches = useMemo(() => {
@@ -216,6 +244,43 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
     setCopied(true);
     showToast('Text copied to clipboard', 'success');
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyFullChapter = () => {
+    if (activeChapterPages.length === 0) return;
+    const header = `${activeTocChapter?.title || volume.title}\n${activeTocChapter?.part ? `${activeTocChapter.part}\n` : ''}From: ${volume.title} (${volume.publisher})\nOfficial MEA Publication, Government of India\n\n`;
+    const body = activeChapterPages
+      .map(
+        (p) =>
+          `[Printed Book Page ${p.bookPageNumber || '—'} • PDF Page ${p.pdfPageNumber}]\n\n${p.text}`
+      )
+      .join('\n\n\n');
+    navigator.clipboard.writeText(header + body);
+    setCopied(true);
+    showToast(`Copied complete text of "${activeTocChapter?.title || 'Chapter'}" (${activeChapterPages.length} pages)`, 'success');
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadChapter = () => {
+    if (activeChapterPages.length === 0) return;
+    const header = `${activeTocChapter?.title || volume.title}\n${activeTocChapter?.part ? `${activeTocChapter.part}\n` : ''}From: ${volume.title} (${volume.publisher})\nOfficial MEA Publication, Government of India\n\n`;
+    const body = activeChapterPages
+      .map(
+        (p) =>
+          `============================================================\nPrinted Book Page ${p.bookPageNumber || '—'}  |  PDF Page ${p.pdfPageNumber}\n============================================================\n\n${p.text}`
+      )
+      .join('\n\n\n');
+    const blob = new Blob([header + body], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const sanitizedTitle = (activeTocChapter?.title || 'chapter').replace(/[^a-zA-Z0-9_-]/g, '_');
+    link.download = `${sanitizedTitle}_MEA_Extracted_Text.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast(`Downloaded complete text of "${activeTocChapter?.title || 'Chapter'}"`, 'success');
   };
 
   const selectedLangObj = EIGHTH_SCHEDULE_LANGUAGES.find((l) => l.code === selectedLangCode) || EIGHTH_SCHEDULE_LANGUAGES[0];
@@ -576,40 +641,155 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
           
           {/* A. Extracted Text View */}
           {viewMode === 'text' && (
-            <div className="flex-1 flex flex-col p-5 sm:p-8 overflow-y-auto max-h-[720px] space-y-6">
+            <div className="flex-1 flex flex-col p-4 sm:p-6 lg:p-8 overflow-y-auto max-h-[760px] space-y-6">
               
-              {/* Active Chapter Banner & Quick PDF Jump */}
-              <div className="bg-[#FAF4EA] border border-[#DED3C2] rounded-2xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-3 text-xs shadow-2xs">
-                <div className="flex items-center gap-2.5">
-                  <span className="p-1.5 rounded-lg bg-[#E7D5B9] text-[#713F2B]">
-                    <BookOpen className="w-4 h-4 text-[#B96535]" />
-                  </span>
-                  <div>
-                    <span className="block text-[10px] font-bold uppercase tracking-wider text-[#827567]">
-                      {activeTocChapter?.part || 'Current Chapter'}
-                    </span>
-                    <span className="font-serif text-base font-bold text-[#29251F]">
+              {/* Active Chapter Banner & Reading Mode Controls */}
+              <div id="chapter-top-banner" className="bg-[#FAF4EA] border border-[#DED3C2] rounded-2xl p-4 sm:p-5 shadow-2xs space-y-4">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-[#E7D5B9] text-[#713F2B]">
+                        <BookOpen className="w-4 h-4 text-[#B96535]" />
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#827567]">
+                        {activeTocChapter?.part || 'Official Writings & Speeches'}
+                      </span>
+                    </div>
+                    <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#29251F]">
                       {activeTocChapter?.title || volume.title}
-                    </span>
+                    </h2>
+                    {activeTocChapter?.description && (
+                      <p className="text-xs sm:text-sm text-[#51483F] leading-relaxed max-w-2xl">
+                        {activeTocChapter.description}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Reading Mode Switcher (Continuous vs Single Page) */}
+                  <div className="flex flex-wrap items-center gap-2 self-start md:self-center">
+                    <div className="flex items-center bg-[#E7D5B9]/70 p-1 rounded-xl border border-[#DED3C2]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReadingMode('chapter');
+                          showToast('Switched to Complete Chapter View', 'info');
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          readingMode === 'chapter'
+                            ? 'bg-[#29251F] text-white shadow-xs'
+                            : 'text-[#51483F] hover:text-[#29251F]'
+                        }`}
+                        title="Read full continuous chapter text"
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>Continuous Chapter ({activeChapterPages.length > 0 ? `${activeChapterPages.length} Pages` : 'Text'})</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReadingMode('page');
+                          showToast(`Switched to Single Page View (Page ${currentPage})`, 'info');
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          readingMode === 'page'
+                            ? 'bg-[#29251F] text-white shadow-xs'
+                            : 'text-[#51483F] hover:text-[#29251F]'
+                        }`}
+                        title="Read one page at a time"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Single Page</span>
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setViewMode('pdf');
+                        showToast(`Switched to Original MEA PDF at Page ${extractedPageData?.pdfPageNumber || currentPage}`, 'info');
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#B96535] hover:bg-[#713F2B] text-white rounded-xl text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>PDF Reader</span>
+                    </button>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-mono text-[#827567] hidden sm:inline">
-                    PDF Page {extractedPageData?.pdfPageNumber || currentPage} of {totalPages}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setViewMode('pdf');
-                      showToast(`Switched to Original PDF at Page ${extractedPageData?.pdfPageNumber || currentPage}`, 'info');
-                    }}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#B96535] hover:bg-[#713F2B] text-white rounded-xl text-xs font-bold shadow-2xs transition-colors"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Open in PDF Reader</span>
-                  </button>
+                {/* Chapter Metrics Bar & Actions */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#DED3C2] text-xs">
+                  <div className="flex flex-wrap items-center gap-3 font-mono text-[#827567]">
+                    <span className="flex items-center gap-1 text-[#713F2B] font-semibold">
+                      <BookMarked className="w-3.5 h-3.5 text-[#B96535]" />
+                      <span>{activeChapterPages.length} Extracted Pages</span>
+                    </span>
+                    <span>•</span>
+                    <span>{totalChapterWords.toLocaleString()} Words</span>
+                    <span>•</span>
+                    <span>~{Math.max(1, Math.ceil(totalChapterWords / 200))} min read</span>
+                    <span>•</span>
+                    <span className="text-emerald-700 font-sans font-semibold">Official MEA Edition</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCopyFullChapter}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-[#F5EBDD] text-[#51483F] border border-[#DED3C2] rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                      title="Copy entire chapter text to clipboard"
+                    >
+                      {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copied ? 'Copied!' : 'Copy Chapter'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleDownloadChapter}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-[#F5EBDD] text-[#51483F] border border-[#DED3C2] rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                      title="Download chapter as clean .txt file"
+                    >
+                      <Download className="w-3.5 h-3.5 text-[#713F2B]" />
+                      <span>Download .txt</span>
+                    </button>
+                  </div>
                 </div>
+
+                {/* Quick Page Navigator Pill Bar (when in chapter mode and multiple pages) */}
+                {activeChapterPages.length > 1 && (
+                  <div className="pt-2 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                    <span className="text-[11px] font-bold text-[#713F2B] uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+                      <AlignLeft className="w-3 h-3" />
+                      <span>Pages:</span>
+                    </span>
+                    {activeChapterPages.map((p) => {
+                      const isCurrent = currentPage === p.pdfPageNumber;
+                      return (
+                        <button
+                          key={p.pdfPageNumber}
+                          type="button"
+                          onClick={() => {
+                            handlePageChange(p.pdfPageNumber);
+                            if (readingMode === 'chapter') {
+                              const el = document.getElementById(`chapter-page-${p.pdfPageNumber}`);
+                              if (el) {
+                                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }
+                            }
+                          }}
+                          className={`px-2 py-0.5 rounded-lg text-xs font-mono transition-colors shrink-0 cursor-pointer ${
+                            isCurrent
+                              ? 'bg-[#B96535] text-white font-bold shadow-2xs'
+                              : 'bg-white hover:bg-[#E7D5B9] text-[#51483F] border border-[#DED3C2]'
+                          }`}
+                          title={`Go to ${p.bookPageNumber ? `Printed Book Page #${p.bookPageNumber}` : `PDF Page ${p.pdfPageNumber}`}`}
+                        >
+                          {p.bookPageNumber ? `p.${p.bookPageNumber}` : `PDF ${p.pdfPageNumber}`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Multilingual Full-Text Translation Toolbar inside Transcription tab */}
@@ -673,7 +853,7 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
                       ) : (
                         <Sparkles className="w-3.5 h-3.5" />
                       )}
-                      <span>{isTranslating ? 'Translating...' : 'Translate Page'}</span>
+                      <span>{isTranslating ? 'Translating...' : 'Translate'}</span>
                     </button>
                   </div>
 
@@ -696,7 +876,7 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
                       title="Copy displayed page text"
                     >
                       {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copied ? 'Copied' : 'Copy'}</span>
+                      <span>{copied ? 'Copied' : 'Copy Page'}</span>
                     </button>
                   </div>
                 </div>
@@ -717,76 +897,212 @@ export const InteractivePdfViewer: React.FC<InteractivePdfViewerProps> = ({
                 )}
               </div>
 
-              {/* Current Page Header Meta */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#DED3C2] text-xs text-[#827567]">
-                <div>
-                  <span className="font-serif text-base font-bold text-[#29251F] mr-2">
-                    {extractedPageData?.chapterTitle || activeTocChapter?.title || volume.title}
-                  </span>
-                  {extractedPageData?.bookPageNumber && (
-                    <span className="text-[#713F2B] font-mono">
-                      (Printed Book Page #{extractedPageData.bookPageNumber})
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 font-mono">
-                  <span>PDF Page {extractedPageData?.pdfPageNumber || currentPage} of {totalPages}</span>
-                  {extractedPageData?.wordCount && (
-                    <span>• {extractedPageData.wordCount} words</span>
-                  )}
-                </div>
-              </div>
+              {/* Chapter Content Stream OR Single Page View */}
+              {readingMode === 'chapter' && activeChapterPages.length > 0 ? (
+                <div className="space-y-6">
+                  {translationResult ? (
+                    <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#DED3C2] space-y-4">
+                      <div className="flex items-center justify-between pb-3 border-b border-[#DED3C2] text-xs text-[#827567]">
+                        <span className="font-bold text-[#713F2B]">
+                          Translated into {translationResult.language.name} ({translationResult.language.nativeName})
+                        </span>
+                        <button
+                          onClick={() => setTranslationResult(null)}
+                          className="text-[#B96535] hover:underline flex items-center gap-1 font-semibold"
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                          <span>Show Original English</span>
+                        </button>
+                      </div>
+                      <div className="space-y-4 font-serif text-base sm:text-lg text-[#29251F] leading-relaxed">
+                        {translationResult.translatedText.split('\n\n').map((paragraph, idx) => (
+                          <p key={idx}>{paragraph}</p>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    activeChapterPages.map((page) => (
+                      <article
+                        key={page.pdfPageNumber}
+                        id={`chapter-page-${page.pdfPageNumber}`}
+                        className="bg-white p-6 sm:p-8 rounded-2xl border border-[#DED3C2] shadow-2xs space-y-4 scroll-mt-6"
+                      >
+                        {/* Page Divider Badge */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#EADFCF] text-xs text-[#827567]">
+                          <div className="flex items-center gap-2">
+                            <span className="font-serif font-bold text-[#29251F] text-sm">
+                              {page.bookPageNumber ? `Printed Book Page #${page.bookPageNumber}` : `Page ${page.pdfPageNumber}`}
+                            </span>
+                            <span className="text-[#713F2B] font-mono text-[11px]">
+                              (PDF Page {page.pdfPageNumber} of {totalPages})
+                            </span>
+                            {page.wordCount && (
+                              <span className="font-mono text-[11px] text-[#827567] hidden sm:inline">
+                                • {page.wordCount} words
+                              </span>
+                            )}
+                          </div>
 
-              {/* The Actual Extracted Page Content */}
-              <article className="prose max-w-none text-[#29251F] leading-relaxed selection:bg-[#E7D5B9]">
-                {translationResult ? (
-                  <div className="space-y-4">
-                    {translationResult.translatedText.split('\n\n').map((paragraph, idx) => (
-                      <p key={idx} className="leading-relaxed text-[#29251F] text-base sm:text-lg">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
-                ) : extractedPageData?.text ? (
-                  renderHighlightedText(extractedPageData.text)
-                ) : (
-                  <div className="bg-[#FAF4EA] p-6 sm:p-8 rounded-2xl border border-[#DED3C2] space-y-4">
-                    <div className="flex items-center gap-2 text-[#713F2B] font-semibold text-sm">
-                      <BookOpen className="w-4 h-4 text-[#B96535]" />
-                      <span>{activeTocChapter?.title || `Page ${currentPage}`}</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handlePageChange(page.pdfPageNumber);
+                                setViewMode('pdf');
+                                showToast(`Opening PDF Facsimile at Page ${page.pdfPageNumber}`, 'info');
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FAF4EA] hover:bg-[#E7D5B9] text-[#713F2B] rounded-lg border border-[#DED3C2] text-[11px] font-semibold transition-colors cursor-pointer"
+                              title={`View facsimile for page ${page.pdfPageNumber}`}
+                            >
+                              <BookOpen className="w-3 h-3 text-[#B96535]" />
+                              <span>View Facsimile</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleCopyText(page.text)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FAF4EA] hover:bg-[#E7D5B9] text-[#51483F] rounded-lg border border-[#DED3C2] text-[11px] font-semibold transition-colors cursor-pointer"
+                              title="Copy this page"
+                            >
+                              <Copy className="w-3 h-3 text-[#827567]" />
+                              <span>Copy Page</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Extracted Verbatim Text */}
+                        <div className="prose max-w-none text-[#29251F] leading-relaxed selection:bg-[#E7D5B9] font-serif text-base sm:text-lg">
+                          {renderHighlightedText(page.text)}
+                        </div>
+                      </article>
+                    ))
+                  )}
+
+                  {/* End of Chapter Completion Card */}
+                  <div className="bg-[#FAF4EA] border-2 border-[#DED3C2] rounded-3xl p-6 sm:p-8 text-center space-y-4">
+                    <div className="w-12 h-12 mx-auto rounded-full bg-[#E7D5B9] text-[#713F2B] flex items-center justify-center font-bold">
+                      <Check className="w-6 h-6 text-emerald-700" />
                     </div>
-                    <div className="space-y-2 text-sm text-[#51483F] leading-relaxed">
-                      <p>
-                        This section corresponds to <strong>"{activeTocChapter?.title || volume.title}"</strong> starting on PDF page <strong>{activeTocChapter?.startPage || currentPage}</strong> in <em>{volume.title}</em>, officially published by the Ministry of External Affairs and the Dr. Ambedkar Foundation, Government of India.
-                      </p>
-                      <p className="text-xs text-[#827567]">
-                        The complete facsimile document with searchable text is accessible directly in the integrated PDF reader below or via official MEA download.
+                    <div className="space-y-1">
+                      <h4 className="font-serif text-xl font-bold text-[#29251F]">
+                        End of "{activeTocChapter?.title || 'Chapter'}"
+                      </h4>
+                      <p className="text-xs sm:text-sm text-[#827567] max-w-lg mx-auto">
+                        You have completed reading all {activeChapterPages.length} pages of Dr. Babasaheb Ambedkar's "{activeTocChapter?.title}" ({totalChapterWords.toLocaleString()} words) from the official MEA publication.
                       </p>
                     </div>
-                    <div className="pt-2 flex flex-wrap items-center gap-3">
+
+                    <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                      {(() => {
+                        const currentIdx = volume.tableOfContents.findIndex((c) => c.title === activeTocChapter?.title);
+                        const nextChapter = volume.tableOfContents[currentIdx + 1];
+                        if (nextChapter) {
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => handleTocClick(nextChapter, false)}
+                              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#B96535] hover:bg-[#713F2B] text-white rounded-xl text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                            >
+                              <span>Next: {nextChapter.title}</span>
+                              <ArrowRight className="w-4 h-4" />
+                            </button>
+                          );
+                        }
+                        return null;
+                      })()}
+
                       <button
+                        type="button"
                         onClick={() => {
-                          setViewMode('pdf');
-                          showToast(`Opening "${activeTocChapter?.title || 'Chapter'}" in PDF Reader`, 'info');
+                          const topEl = document.getElementById('chapter-top-banner');
+                          if (topEl) topEl.scrollIntoView({ behavior: 'smooth' });
                         }}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#B96535] text-white rounded-xl text-xs font-bold shadow-2xs hover:bg-[#713F2B] transition-colors"
+                        className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white hover:bg-[#F5EBDD] text-[#51483F] border border-[#DED3C2] rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                       >
-                        <BookOpen className="w-4 h-4" />
-                        <span>Open this Chapter in PDF Reader (Page {activeTocChapter?.startPage || currentPage})</span>
+                        <ArrowUp className="w-3.5 h-3.5 text-[#B96535]" />
+                        <span>Back to Top of Chapter</span>
                       </button>
-                      <a
-                        href={`${volume.originalUrl}#page=${activeTocChapter?.startPage || currentPage}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white text-[#51483F] border border-[#DED3C2] hover:bg-[#F5EBDD] rounded-xl text-xs font-semibold transition-colors"
-                      >
-                        <span>Download MEA PDF</span>
-                        <ArrowUpRight className="w-3.5 h-3.5 text-[#B96535]" />
-                      </a>
                     </div>
                   </div>
-                )}
-              </article>
+                </div>
+              ) : (
+                /* Single Page View or Fallback */
+                <div className="space-y-6">
+                  {/* Current Page Header Meta */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#DED3C2] text-xs text-[#827567]">
+                    <div>
+                      <span className="font-serif text-base font-bold text-[#29251F] mr-2">
+                        {extractedPageData?.chapterTitle || activeTocChapter?.title || volume.title}
+                      </span>
+                      {extractedPageData?.bookPageNumber && (
+                        <span className="text-[#713F2B] font-mono">
+                          (Printed Book Page #{extractedPageData.bookPageNumber})
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 font-mono">
+                      <span>PDF Page {extractedPageData?.pdfPageNumber || currentPage} of {totalPages}</span>
+                      {extractedPageData?.wordCount && (
+                        <span>• {extractedPageData.wordCount} words</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* The Actual Extracted Page Content */}
+                  <article className="prose max-w-none text-[#29251F] leading-relaxed selection:bg-[#E7D5B9] bg-white p-6 sm:p-8 rounded-2xl border border-[#DED3C2]">
+                    {translationResult ? (
+                      <div className="space-y-4">
+                        {translationResult.translatedText.split('\n\n').map((paragraph, idx) => (
+                          <p key={idx} className="leading-relaxed text-[#29251F] text-base sm:text-lg">
+                            {paragraph}
+                          </p>
+                        ))}
+                      </div>
+                    ) : extractedPageData?.text ? (
+                      renderHighlightedText(extractedPageData.text)
+                    ) : (
+                      <div className="bg-[#FAF4EA] p-6 sm:p-8 rounded-2xl border border-[#DED3C2] space-y-4">
+                        <div className="flex items-center gap-2 text-[#713F2B] font-semibold text-sm">
+                          <BookOpen className="w-4 h-4 text-[#B96535]" />
+                          <span>{activeTocChapter?.title || `Page ${currentPage}`}</span>
+                        </div>
+                        <div className="space-y-2 text-sm text-[#51483F] leading-relaxed">
+                          <p>
+                            Page <strong>{currentPage}</strong> is a facsimile plate, photographic illustration, or frontispiece in the official MEA publication of <em>{volume.title}</em>.
+                          </p>
+                          <p className="text-xs text-[#827567]">
+                            View the original facsimile plate directly in the embedded PDF reader below, or jump to the full extracted text of this chapter.
+                          </p>
+                        </div>
+                        <div className="pt-2 flex flex-wrap items-center gap-3">
+                          <button
+                            onClick={() => {
+                              setViewMode('pdf');
+                              showToast(`Opening page ${currentPage} in PDF Reader`, 'info');
+                            }}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#B96535] text-white rounded-xl text-xs font-bold shadow-2xs hover:bg-[#713F2B] transition-colors cursor-pointer"
+                          >
+                            <BookOpen className="w-4 h-4" />
+                            <span>View Facsimile Plate in PDF Reader (Page {currentPage})</span>
+                          </button>
+                          {activeChapterPages.length > 0 && (
+                            <button
+                              onClick={() => {
+                                setReadingMode('chapter');
+                                showToast(`Reading full text of ${activeTocChapter?.title}`, 'info');
+                              }}
+                              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white text-[#713F2B] border border-[#DED3C2] hover:bg-[#F5EBDD] rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                            >
+                              <span>Read Full Chapter Text ({activeChapterPages.length} Pages)</span>
+                              <ArrowRight className="w-3.5 h-3.5 text-[#B96535]" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </article>
+                </div>
+              )}
 
             </div>
           )}

@@ -30,7 +30,8 @@ export const ViewerPage: React.FC = () => {
   const { isBookmarked, toggleBookmark } = useBookmarks();
 
   const meaVolume = id ? archiveService.getMeaVolumeById(id) : undefined;
-  const initialPage = parseInt(searchParams.get('page') || '1', 10) || 1;
+  const pageParam = searchParams.get('page');
+  const initialPage = pageParam ? parseInt(pageParam, 10) : undefined;
   const initialQuery = searchParams.get('q') || '';
 
   useEffect(() => {
@@ -363,7 +364,7 @@ export const ViewerPage: React.FC = () => {
         isOpen={citationModalOpen}
         onClose={() => setCitationModalOpen(false)}
         record={record}
-        currentPage={initialPage > 1 ? initialPage : undefined}
+        currentPage={initialPage && initialPage > 1 ? initialPage : undefined}
         pageRange={record.pageRange}
         isTranslation={activeTab === 'transcription' && !!record.translation?.isTranslation}
       />

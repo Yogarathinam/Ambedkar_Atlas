@@ -22,6 +22,9 @@ export interface ExtractedPage {
   extractionStatus: 'extracted' | 'scanned_ocr' | 'metadata_only' | 'pending';
 }
 
+import volume12PagesRaw from './ingested/volume12_pages.json';
+const volume12Pages: ExtractedPage[] = volume12PagesRaw as ExtractedPage[];
+
 export interface MeaVolumeRecord {
   id: string;
   title: string;
@@ -5432,26 +5435,60 @@ export const MEA_INGESTED_VOLUMES: MeaVolumeRecord[] = [
     ],
     "tableOfContents": [
       {
-        "title": "Ancient Indian Commerce",
+        "title": "Front Matter & Editorial Note",
         "startPage": 1,
-        "part": "Part I"
+        "endPage": 21,
+        "part": "Introductory",
+        "description": "Editorial preface, publisher's note, and facsimile manuscript plate."
+      },
+      {
+        "title": "Ancient Indian Commerce",
+        "startPage": 22,
+        "endPage": 51,
+        "part": "Part I: Economic Treatises",
+        "description": "Dr. Ambedkar's Columbia University M.A. thesis (1915) analyzing commercial relations of ancient India with Rome, Egypt, and the Middle East."
       },
       {
         "title": "Commercial Relations of India in the Middle Ages",
-        "startPage": 85,
-        "part": "Part II"
+        "startPage": 52,
+        "endPage": 73,
+        "part": "Part I: Economic Treatises",
+        "description": "Economic survey of Indian trade routes following the rise of Islam and the commercial expansion of Western Europe."
+      },
+      {
+        "title": "India on the Eve of the Crown Government",
+        "startPage": 74,
+        "endPage": 95,
+        "part": "Part I: Economic Treatises",
+        "description": "Dissertation on the East India Company's administration and Indian commerce before the 1858 Crown Government."
       },
       {
         "title": "The Untouchables and the Pax Britannica",
-        "startPage": 195,
-        "part": "Part III"
+        "startPage": 96,
+        "endPage": 175,
+        "part": "Part II: Historical Essays",
+        "description": "Exhaustive historical analysis of the conditions of Depressed Classes under British rule."
+      },
+      {
+        "title": "Lectures on the English Constitution",
+        "startPage": 176,
+        "endPage": 229,
+        "part": "Part III: Constitutional Law",
+        "description": "Scholarly lectures delivered at Government Law College, Bombay, on parliamentary governance and constitutional conventions."
+      },
+      {
+        "title": "Waiting for a Visa",
+        "startPage": 682,
+        "endPage": 713,
+        "part": "Part V: Autobiographical Notes",
+        "description": "Dr. Ambedkar's renowned autobiographical reminiscences documenting untouchability and social barriers."
       }
     ],
     "originalUrl": "https://www.mea.gov.in/images/CPV/Volume12.pdf",
     "sourceUrl": "https://www.mea.gov.in/books-writings-of-ambedkar.htm",
-    "extractedPagesCount": 0,
-    "extractedPages": [],
-    "extractionStatus": "indexed",
+    "extractedPagesCount": volume12Pages.length,
+    "extractedPages": volume12Pages,
+    "extractionStatus": "complete",
     "tags": [
       "MEA",
       "Government of India",
