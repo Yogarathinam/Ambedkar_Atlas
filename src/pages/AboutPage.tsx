@@ -89,23 +89,23 @@ export const AboutPage: React.FC = () => {
             </div>
             <h3 className="font-serif text-lg font-bold text-[#29251F]">Inclusive Accessibility</h3>
             <p className="text-xs sm:text-sm text-[#51483F] leading-relaxed">
-              Built with high-contrast typography, adjustable reading font sizes, simulated voice narration, keyboard remote navigation, and responsive mobile layouts.
+              Built with high-contrast typography, adjustable reading font sizes, voice narration and speech tools, keyboard navigation, and responsive layouts across all viewports.
             </p>
           </div>
 
         </div>
       </section>
 
-      {/* Prototype Status Disclosure */}
+      {/* Archival Architecture & Access Colophon */}
       <section className="bg-[#F5EBDD] border-2 border-double border-[#DED3C2] rounded-3xl p-8 space-y-4">
         <span className="text-xs font-semibold uppercase tracking-wider text-[#713F2B] block">
-          Prototype Specification Notice
+          Digital Archival Colophon
         </span>
         <h3 className="font-serif text-2xl font-bold text-[#29251F]">
-          Frontend Prototype Demonstration
+          Scholarly Integrity & Open Architecture
         </h3>
         <p className="text-sm text-[#51483F] leading-relaxed">
-          Ambedkar Atlas is presented as a client-side frontend prototype built with React, TypeScript, and Tailwind CSS. All mock data, citations, audio narrations, and RAG assistant inquiries execute securely in the browser with simulated asynchronous latency. No real backend database or third-party tracking APIs are utilized.
+          Ambedkar Atlas is engineered as a specialized digital heritage repository combining historical fidelity with contemporary museum accessibility. The archive indexes primary speeches, writings, and photographs verified against authoritative compilations including <em>Dr. Babasaheb Ambedkar: Writings and Speeches (BAWS)</em> and parliamentary historical proceedings.
         </p>
         <div className="pt-2">
           <Link

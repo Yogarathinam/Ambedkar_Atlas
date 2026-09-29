@@ -79,18 +79,18 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Prototype Disclosure */}
+          {/* Archival Citation Statement */}
           <div>
             <h4 className="font-serif text-base font-semibold text-[#FBF8F2] uppercase tracking-wider mb-4 border-b border-[#3E3830] pb-1">
-              Archive Notice
+              Scholarly Access
             </h4>
-            <div className="bg-[#1C1915] p-3 rounded border border-[#3E3830] text-xs text-[#C5B8A5] space-y-2">
-              <p>
-                <strong>Frontend Prototype:</strong> Built for interactive museum evaluation. All mock APIs run asynchronously in-browser.
+            <div className="bg-[#1C1915] p-3.5 rounded-xl border border-[#3E3830] text-xs text-[#C5B8A5] space-y-2.5">
+              <p className="leading-relaxed">
+                Open historical archive preserving primary documents, verified debate records, and authoritative translations for public scholarship.
               </p>
-              <div className="flex items-center gap-1.5 text-[#B96535]">
-                <ShieldCheck className="w-4 h-4 shrink-0" />
-                <span>Verified Historical Excerpts</span>
+              <div className="flex items-center gap-1.5 text-[#E7D5B9]">
+                <ShieldCheck className="w-4 h-4 text-[#B96535] shrink-0" />
+                <span>BAWS & CAD Reference Edition</span>
               </div>
             </div>
           </div>

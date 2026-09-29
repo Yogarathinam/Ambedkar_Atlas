@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { CinematicHero } from '../components/hero/CinematicHero';
+import { CollectionsGrid } from '../components/home/CollectionsGrid';
 import { ArchiveCard } from '../components/archive/ArchiveCard';
-import { ARCHIVE_CATEGORIES } from '../data/categories';
 import { TIMELINE_EVENTS } from '../data/timelineEvents';
 import { SUGGESTED_PROMPTS } from '../data/researchQA';
 import { archiveService } from '../services/archiveService';
 import { ArchiveRecord } from '../types';
 import { 
-  BookOpen, Mic, Scroll, Image, Radio, Film, Clock, Bot, 
-  ArrowRight, ShieldCheck, Sparkles, Compass, CheckCircle2, ChevronRight 
+  BookOpen, Clock, Bot, 
+  ArrowRight, ShieldCheck, Sparkles, CheckCircle2 
 } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
@@ -24,79 +24,22 @@ export const HomePage: React.FC = () => {
     });
   }, []);
 
-  const getCategoryIcon = (id: string) => {
-    switch (id) {
-      case 'writings': return <BookOpen className="w-6 h-6 text-[#B96535]" />;
-      case 'speeches': return <Mic className="w-6 h-6 text-[#B96535]" />;
-      case 'manuscripts': return <Scroll className="w-6 h-6 text-[#B96535]" />;
-      case 'photographs': return <Image className="w-6 h-6 text-[#B96535]" />;
-      case 'audio': return <Radio className="w-6 h-6 text-[#B96535]" />;
-      case 'video': return <Film className="w-6 h-6 text-[#B96535]" />;
-      default: return <BookOpen className="w-6 h-6 text-[#B96535]" />;
-    }
-  };
-
   return (
-    <div className="space-y-20 sm:space-y-28 pb-16">
+    <div className="space-y-16 sm:space-y-24 pb-16">
       
-      {/* 1. Cinematic Hero Section */}
+      {/* 1. Cinematic Hero Section (Transparent Portrait + Crowd SVG Parallax) */}
       <CinematicHero />
 
-      {/* 2. Explore the Heritage (Category Cards) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-semibold uppercase tracking-widest text-[#B96535] block mb-2">
-            Archival Collections
-          </span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#29251F] tracking-tight">
-            Explore the Heritage
-          </h2>
-          <p className="text-base text-[#51483F] mt-2 leading-relaxed">
-            Curated historical records categorized across treatises, fiery addresses, handwritten constitutional drafts, and authenticated media.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {ARCHIVE_CATEGORIES.slice(0, 6).map((cat) => (
-            <div
-              key={cat.id}
-              onClick={() => navigate(`/archive?category=${cat.id}`)}
-              className="group bg-[#FBF8F2] border border-[#DED3C2] hover:border-[#B96535] rounded-2xl p-6 sm:p-7 transition-all duration-300 hover:shadow-lg cursor-pointer flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#F5EBDD] flex items-center justify-center group-hover:bg-[#E7D5B9] transition-colors">
-                    {getCategoryIcon(cat.id)}
-                  </div>
-                  <span className="text-xs font-bold text-[#713F2B] bg-[#E7D5B9]/60 px-2.5 py-1 rounded-full border border-[#DED3C2]">
-                    {cat.count} items
-                  </span>
-                </div>
-
-                <h3 className="font-serif text-xl font-bold text-[#29251F] group-hover:text-[#B96535] transition-colors mb-2">
-                  {cat.title}
-                </h3>
-                <p className="text-sm text-[#51483F] leading-relaxed">
-                  {cat.description}
-                </p>
-              </div>
-
-              <div className="pt-5 mt-4 border-t border-[#DED3C2] flex items-center justify-between text-xs font-semibold text-[#B96535]">
-                <span>Browse Collection</span>
-                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* 2. Archival Collections (Modern Animated Cards) */}
+      <CollectionsGrid />
 
       {/* 3. Journey Through Time (Compact Timeline Preview) */}
       <section className="bg-[#E7D5B9]/35 border-y border-[#DED3C2] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-widest text-[#B96535] block mb-2">
-                Chronological Journey
+              <span className="text-xs font-semibold uppercase tracking-widest text-[#B96535] block mb-1">
+                Historical Chronology
               </span>
               <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#29251F]">
                 Journey Through Time (1891–1956)
@@ -111,7 +54,7 @@ export const HomePage: React.FC = () => {
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#29251F] hover:bg-[#3E3830] text-[#FBF8F2] text-sm font-semibold rounded-xl transition-all shadow-xs self-start md:self-auto shrink-0"
             >
               <Clock className="w-4 h-4 text-[#B96535]" />
-              <span>Open Interactive Timeline</span>
+              <span>Full Interactive Timeline</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -151,7 +94,7 @@ export const HomePage: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#B96535] block mb-2">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#B96535] block mb-1">
               Curated Highlights
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#29251F]">
@@ -186,21 +129,21 @@ export const HomePage: React.FC = () => {
         )}
       </section>
 
-      {/* 5. Ask and Discover (AI Assistant Teaser) */}
+      {/* 5. Ask and Discover (Research Assistant Teaser) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-[#FBF8F2] border-2 border-double border-[#DED3C2] rounded-3xl p-8 sm:p-12 shadow-sm relative overflow-hidden">
-          <div className="max-w-3xl space-y-6">
+          <div className="max-w-3xl space-y-5">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E7D5B9] text-[#713F2B] text-xs font-semibold tracking-wider uppercase">
               <Bot className="w-3.5 h-3.5 text-[#B96535]" />
-              <span>Simulated RAG Assistant</span>
+              <span>Research Assistant</span>
             </div>
 
             <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-[#29251F] leading-tight">
-              Ask & Discover: Historical Research Assistant
+              Ask & Discover: Archival Inquiries
             </h2>
 
             <p className="text-base sm:text-lg text-[#51483F] leading-relaxed">
-              Explore complex questions on caste annihilation, the drafting of Fundamental Rights, and monetary economics. The assistant synthesizes verified primary sources with inline citation markers linked to original archive entries.
+              Explore questions on caste annihilation, the drafting of Fundamental Rights, and monetary economics. Every answer provides inline markers linking directly to primary source records.
             </p>
 
             {/* Quick Prompt Pills */}
@@ -222,7 +165,7 @@ export const HomePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-4 flex items-center gap-4">
+            <div className="pt-3">
               <button
                 onClick={() => navigate('/research')}
                 className="px-6 py-3 bg-[#B96535] hover:bg-[#713F2B] text-white text-sm font-semibold rounded-xl transition-all shadow-xs flex items-center gap-2"
@@ -257,7 +200,7 @@ export const HomePage: React.FC = () => {
             <div className="bg-[#1C1814] p-6 rounded-2xl border border-[#3E3830] space-y-3 text-xs text-[#C5B8A5]">
               <div className="flex items-center gap-2 text-[#E7D5B9] font-medium">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Zero Hallucination Grounding</span>
+                <span>Verified Archival Records</span>
               </div>
               <div className="flex items-center gap-2 text-[#E7D5B9] font-medium">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -269,7 +212,7 @@ export const HomePage: React.FC = () => {
               </div>
               <div className="pt-2 border-t border-[#3E3830]">
                 <Link to="/about" className="text-[#B96535] hover:underline font-semibold block">
-                  Read full preservation charter →
+                  Read preservation charter →
                 </Link>
               </div>
             </div>

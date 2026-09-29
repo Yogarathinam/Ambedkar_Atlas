@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { TimelineEvent } from '../../types';
-import { ChevronLeft, ChevronRight, Calendar, MapPin, ArrowRight } from 'lucide-react';
-import { useDevice } from '../../context/DeviceContext';
+import { Calendar, MapPin, ArrowRight, Quote, BookOpen } from 'lucide-react';
 
 interface TimelineTrackProps {
   events: TimelineEvent[];
@@ -14,161 +14,114 @@ export const TimelineTrack: React.FC<TimelineTrackProps> = ({
   selectedEvent,
   onSelectEvent,
 }) => {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { isMobilePreview, isKiosk } = useDevice();
-  const [focusedIndex, setFocusedIndex] = useState<number>(0);
-
-  const handleScroll = (direction: 'left' | 'right') => {
-    if (scrollContainerRef.current) {
-      const offset = direction === 'left' ? -380 : 380;
-      scrollContainerRef.current.scrollBy({ left: offset, behavior: 'smooth' });
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
-    if (e.key === 'ArrowRight' && index < events.length - 1) {
-      setFocusedIndex(index + 1);
-    } else if (e.key === 'ArrowLeft' && index > 0) {
-      setFocusedIndex(index - 1);
-    } else if (e.key === 'Enter') {
-      onSelectEvent(events[index]);
-    }
-  };
-
-  // If mobile preview or kiosk or narrow viewport, render vertical timeline
-  const isVertical = isMobilePreview || isKiosk;
-
-  if (isVertical) {
+  if (events.length === 0) {
     return (
-      <div className="relative pl-6 sm:pl-8 space-y-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#DED3C2]">
-        {events.map((evt, idx) => {
-          const isSelected = selectedEvent?.id === evt.id;
-          return (
-            <div
-              key={evt.id}
-              tabIndex={0}
-              onClick={() => onSelectEvent(evt)}
-              onKeyDown={(e) => handleKeyDown(e, idx)}
-              className={`relative bg-[#FBF8F2] border rounded-xl p-5 transition-all cursor-pointer shadow-xs ${
-                isSelected
-                  ? 'border-[#B96535] ring-2 ring-[#B96535]/20 shadow-md'
-                  : 'border-[#DED3C2] hover:border-[#B96535]'
-              }`}
-            >
-              {/* Timeline node marker */}
-              <div className={`absolute -left-[31px] top-6 w-5 h-5 rounded-full border-2 border-[#F5EBDD] flex items-center justify-center transition-colors ${
-                isSelected ? 'bg-[#B96535]' : 'bg-[#713F2B]'
-              }`}>
-                <div className="w-1.5 h-1.5 rounded-full bg-white" />
-              </div>
-
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#E7D5B9] text-[#713F2B]">
-                  {evt.year}
-                </span>
-                <span className="text-xs text-[#827567] flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  {evt.exactDate}
-                </span>
-              </div>
-
-              <h3 className="font-serif text-lg font-bold text-[#29251F] mb-1">
-                {evt.title}
-              </h3>
-              <p className="text-xs font-medium text-[#713F2B] mb-2">{evt.subtitle}</p>
-              <p className="text-sm text-[#51483F] leading-relaxed mb-3">{evt.summary}</p>
-
-              <div className="flex items-center justify-between pt-2 border-t border-[#DED3C2] text-xs text-[#827567]">
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-[#B96535]" />
-                  {evt.location}
-                </span>
-                <span className="text-[#B96535] font-medium flex items-center gap-0.5">
-                  View Record <ArrowRight className="w-3 h-3" />
-                </span>
-              </div>
-            </div>
-          );
-        })}
+      <div className="py-16 text-center text-[#827567] bg-[#FBF8F2] border border-[#DED3C2] rounded-2xl">
+        <p className="font-serif text-lg text-[#29251F]">No timeline events match your search criteria.</p>
+        <p className="text-xs mt-1">Try searching for other years (e.g., 1916, 1927, 1949, 1956) or topics like "Mahad" or "Constitution".</p>
       </div>
     );
   }
 
-  // Desktop Horizontal Scroller with smooth arrows
   return (
-    <div className="relative py-4">
-      {/* Scroll navigation buttons */}
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-xs font-semibold text-[#827567] uppercase tracking-wider">
-          Horizontal Historical Scrubber • 1891–1956
-        </span>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleScroll('left')}
-            className="p-2 rounded-lg bg-[#FBF8F2] border border-[#DED3C2] hover:bg-[#E7D5B9] text-[#29251F] transition-colors shadow-xs"
-            aria-label="Scroll left"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleScroll('right')}
-            className="p-2 rounded-lg bg-[#FBF8F2] border border-[#DED3C2] hover:bg-[#E7D5B9] text-[#29251F] transition-colors shadow-xs"
-            aria-label="Scroll right"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+    <div className="relative py-8">
+      {/* Central Connecting Vertical Line for Desktop (Centered at 50%), Left-aligned on Mobile */}
+      <div className="absolute top-4 bottom-4 left-6 md:left-1/2 w-0.5 bg-gradient-to-b from-[#B96535] via-[#DED3C2] to-[#B96535] -translate-x-1/2 z-0" />
 
-      {/* Scroller Track */}
-      <div
-        ref={scrollContainerRef}
-        className="flex gap-6 overflow-x-auto pb-6 pt-2 scrollbar-none snap-x focus:outline-none"
-        tabIndex={0}
-      >
+      <div className="space-y-12 sm:space-y-16">
         {events.map((evt, idx) => {
+          const isEven = idx % 2 === 0;
           const isSelected = selectedEvent?.id === evt.id;
+
           return (
             <div
               key={evt.id}
-              tabIndex={0}
-              onClick={() => onSelectEvent(evt)}
-              onKeyDown={(e) => handleKeyDown(e, idx)}
-              className={`snap-start w-[320px] sm:w-[360px] shrink-0 bg-[#FBF8F2] border rounded-2xl p-6 transition-all duration-200 cursor-pointer flex flex-col justify-between hover:shadow-lg ${
-                isSelected
-                  ? 'border-[#B96535] ring-2 ring-[#B96535]/30 shadow-md transform -translate-y-1'
-                  : 'border-[#DED3C2] hover:border-[#B96535]'
+              className={`relative flex flex-col md:flex-row items-center gap-6 md:gap-12 ${
+                isEven ? 'md:flex-row-reverse' : ''
               }`}
             >
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#B96535] text-white">
-                    {evt.year}
-                  </span>
-                  <span className="text-xs text-[#827567] flex items-center gap-1 font-medium">
-                    <Calendar className="w-3.5 h-3.5" />
-                    {evt.exactDate}
-                  </span>
+              {/* Timeline Center Node Marker */}
+              <div
+                className={`absolute left-6 md:left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-4 border-[#F5EBDD] z-10 transition-transform duration-300 flex items-center justify-center ${
+                  isSelected ? 'bg-[#B96535] scale-125 shadow-md' : 'bg-[#713F2B] hover:scale-110'
+                }`}
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-white" />
+              </div>
+
+              {/* Event Card Content (Takes 50% width on desktop, full width on mobile) */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className={`w-full md:w-[calc(50%-2.5rem)] pl-12 md:pl-0 ${
+                  isEven ? 'md:text-left' : 'md:text-left'
+                }`}
+              >
+                <div
+                  onClick={() => onSelectEvent(evt)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectEvent(evt);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  className={`group bg-[#FBF8F2] border rounded-2xl p-6 sm:p-7 transition-all duration-300 cursor-pointer shadow-xs hover:shadow-xl ${
+                    isSelected
+                      ? 'border-[#B96535] ring-2 ring-[#B96535]/25 shadow-md'
+                      : 'border-[#DED3C2] hover:border-[#B96535]'
+                  }`}
+                >
+                  {/* Card Header: Year Pill & Date */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#B96535] text-white shadow-2xs">
+                      {evt.year}
+                    </span>
+                    <span className="text-xs text-[#827567] flex items-center gap-1 font-medium">
+                      <Calendar className="w-3.5 h-3.5" />
+                      {evt.exactDate}
+                    </span>
+                  </div>
+
+                  {/* Title & Subtitle */}
+                  <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#29251F] group-hover:text-[#B96535] transition-colors leading-snug mb-1">
+                    {evt.title}
+                  </h3>
+                  <p className="text-xs font-semibold text-[#713F2B] uppercase tracking-wider mb-3">
+                    {evt.subtitle}
+                  </p>
+
+                  {/* Summary */}
+                  <p className="text-sm text-[#51483F] leading-relaxed mb-4">
+                    {evt.summary}
+                  </p>
+
+                  {/* Archival Quote Snippet (if available) */}
+                  {evt.archivalQuote && (
+                    <div className="bg-[#E7D5B9]/45 border-l-3 border-[#B96535] p-3 rounded-r-lg text-xs italic font-serif text-[#29251F] mb-4 leading-relaxed">
+                      "{evt.archivalQuote.text}"
+                    </div>
+                  )}
+
+                  {/* Card Footer with Location and Direct Link */}
+                  <div className="pt-3 border-t border-[#DED3C2] flex items-center justify-between text-xs text-[#827567]">
+                    <span className="flex items-center gap-1 truncate max-w-[200px]">
+                      <MapPin className="w-3.5 h-3.5 text-[#B96535] shrink-0" />
+                      <span className="truncate">{evt.location}</span>
+                    </span>
+                    <span className="text-[#B96535] font-semibold group-hover:translate-x-1 transition-transform flex items-center gap-1 shrink-0">
+                      <span>Full Record</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
                 </div>
+              </motion.div>
 
-                <h3 className="font-serif text-xl font-bold text-[#29251F] mb-1 leading-snug">
-                  {evt.title}
-                </h3>
-                <p className="text-xs font-medium text-[#713F2B] mb-3">{evt.subtitle}</p>
-                <p className="text-sm text-[#51483F] leading-relaxed line-clamp-4 mb-4">
-                  {evt.summary}
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-[#DED3C2] flex items-center justify-between text-xs text-[#827567]">
-                <span className="flex items-center gap-1 truncate max-w-[190px]">
-                  <MapPin className="w-3.5 h-3.5 text-[#B96535] shrink-0" />
-                  <span className="truncate">{evt.location}</span>
-                </span>
-                <span className="text-[#B96535] font-semibold flex items-center gap-1 shrink-0">
-                  Inspect <ArrowRight className="w-3.5 h-3.5" />
-                </span>
-              </div>
+              {/* Empty placeholder on the other side for desktop grid balance */}
+              <div className="hidden md:block w-[calc(50%-2.5rem)]" />
             </div>
           );
         })}

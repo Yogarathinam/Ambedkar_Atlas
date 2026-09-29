@@ -9,11 +9,10 @@ import { CitationModal } from '../components/viewer/CitationModal';
 import { ArchiveCard } from '../components/archive/ArchiveCard';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { 
-  ArrowLeft, Bookmark, Share2, Quote, ShieldCheck, Calendar, 
-  MapPin, Globe, FileText, Sparkles, BookOpen, Layers, CheckCircle2 
+  ArrowLeft, Bookmark, Quote, Calendar, 
+  FileText, BookOpen, Layers, CheckCircle2 
 } from 'lucide-react';
 import { useBookmarks } from '../context/BookmarkContext';
-import { useToast } from '../context/ToastContext';
 
 export const ViewerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,11 +20,10 @@ export const ViewerPage: React.FC = () => {
   const [record, setRecord] = useState<ArchiveRecord | null>(null);
   const [relatedRecords, setRelatedRecords] = useState<ArchiveRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'original' | 'transcription' | 'summary' | 'translation'>('transcription');
+  const [activeTab, setActiveTab] = useState<'transcription' | 'original' | 'summary'>('transcription');
   const [citationModalOpen, setCitationModalOpen] = useState(false);
 
   const { isBookmarked, toggleBookmark } = useBookmarks();
-  const { showToast } = useToast();
 
   useEffect(() => {
     if (!id) return;
@@ -36,7 +34,6 @@ export const ViewerPage: React.FC = () => {
       setRecord(found);
       setRelatedRecords(related);
       setLoading(false);
-      // Auto default tab based on format
       if (found?.format === 'manuscript' || found?.format === 'photo') {
         setActiveTab('original');
       } else {
@@ -47,7 +44,7 @@ export const ViewerPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <LoadingSkeleton count={3} type="card" />
       </div>
     );
@@ -72,10 +69,10 @@ export const ViewerPage: React.FC = () => {
   const bookmarked = isBookmarked(record.id);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
-      {/* Breadcrumbs and Back Navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#827567] pb-4 border-b border-[#DED3C2]">
+      {/* Compact Breadcrumbs & Back Navigation */}
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#827567] pb-3 border-b border-[#DED3C2]">
         <div className="flex items-center gap-2">
           <Link to="/" className="hover:text-[#29251F]">Home</Link>
           <span>/</span>
@@ -83,20 +80,20 @@ export const ViewerPage: React.FC = () => {
           <span>/</span>
           <span className="capitalize text-[#713F2B] font-medium">{record.category}</span>
           <span>/</span>
-          <span className="text-[#29251F] font-semibold truncate max-w-[200px]">{record.title}</span>
+          <span className="text-[#29251F] font-semibold truncate max-w-[220px]">{record.title}</span>
         </div>
 
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-xs text-[#51483F] hover:text-[#29251F] font-medium transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-[#51483F] hover:text-[#29251F] font-semibold transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back</span>
         </button>
       </div>
 
-      {/* Record Title Header Banner */}
-      <div className="bg-[#FBF8F2] border border-[#DED3C2] rounded-2xl p-6 sm:p-8 shadow-xs space-y-4">
+      {/* Compact Document Header */}
+      <div className="bg-[#FBF8F2] border border-[#DED3C2] rounded-2xl p-5 sm:p-7 shadow-xs space-y-3.5">
         
         {/* Badges & Actions */}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -120,7 +117,7 @@ export const ViewerPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCitationModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F5EBDD] hover:bg-[#E7D5B9] text-[#29251F] text-xs font-semibold border border-[#DED3C2] transition-colors shadow-2xs"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#F5EBDD] hover:bg-[#E7D5B9] text-[#29251F] text-xs font-semibold border border-[#DED3C2] transition-colors shadow-2xs"
             >
               <Quote className="w-3.5 h-3.5 text-[#B96535]" />
               <span>Cite</span>
@@ -128,7 +125,7 @@ export const ViewerPage: React.FC = () => {
 
             <button
               onClick={() => toggleBookmark(record.id, record.title)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
                 bookmarked
                   ? 'bg-[#B96535] text-white border-[#B96535]'
                   : 'bg-[#F5EBDD] text-[#29251F] border-[#DED3C2] hover:bg-[#E7D5B9]'
@@ -145,27 +142,27 @@ export const ViewerPage: React.FC = () => {
           {record.title}
         </h1>
 
-        {/* Description */}
+        {/* Short Description */}
         <p className="text-sm sm:text-base text-[#51483F] leading-relaxed max-w-4xl">
           {record.description}
         </p>
 
-        {/* Provenance Metadata Grid */}
-        <div className="pt-4 border-t border-[#DED3C2] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+        {/* Compact Provenance Details */}
+        <div className="pt-3 border-t border-[#DED3C2] grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
           <div>
-            <span className="text-[#827567] block">Source Collection:</span>
+            <span className="text-[#827567] block">Collection:</span>
             <span className="font-medium text-[#29251F]">{record.sourceCollection}</span>
           </div>
           <div>
-            <span className="text-[#827567] block">Accession / Archival ID:</span>
+            <span className="text-[#827567] block">Accession:</span>
             <span className="font-mono text-[#713F2B] font-semibold">{record.accessionNumber}</span>
           </div>
           <div>
-            <span className="text-[#827567] block">Era & Period:</span>
+            <span className="text-[#827567] block">Historical Epoch:</span>
             <span className="font-medium text-[#29251F]">{record.era}</span>
           </div>
           <div>
-            <span className="text-[#827567] block">Location of Origin:</span>
+            <span className="text-[#827567] block">Location:</span>
             <span className="font-medium text-[#29251F]">{record.locationCreated || 'Bombay / New Delhi'}</span>
           </div>
         </div>
@@ -182,9 +179,9 @@ export const ViewerPage: React.FC = () => {
         />
       )}
 
-      {/* Segmented Viewer Tabs */}
+      {/* Segmented Viewer Tabs: Transcription | Original Facsimile | Historical Summary */}
       <div className="space-y-4">
-        <div className="flex border-b border-[#DED3C2] gap-2 overflow-x-auto">
+        <div className="flex border-b border-[#DED3C2] gap-2">
           <button
             onClick={() => setActiveTab('transcription')}
             className={`px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
@@ -194,7 +191,7 @@ export const ViewerPage: React.FC = () => {
             }`}
           >
             <FileText className="w-4 h-4" />
-            <span>Transcription</span>
+            <span>Transcription & Translation</span>
           </button>
 
           <button
@@ -220,26 +217,13 @@ export const ViewerPage: React.FC = () => {
             <BookOpen className="w-4 h-4" />
             <span>Historical Summary</span>
           </button>
-
-          {record.translation && (
-            <button
-              onClick={() => setActiveTab('translation')}
-              className={`px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
-                activeTab === 'translation'
-                  ? 'bg-[#FBF8F2] text-[#B96535] border-t-2 border-t-[#B96535] border-x border-[#DED3C2]'
-                  : 'text-[#827567] hover:text-[#29251F]'
-              }`}
-            >
-              <Globe className="w-4 h-4" />
-              <span>Translation ({record.translation.language})</span>
-            </button>
-          )}
         </div>
 
-        {/* Tab Content Panes */}
+        {/* Tab Panes */}
         <div>
           {activeTab === 'transcription' && (
             <TranscriptionReader
+              recordId={record.id}
               transcription={record.transcription}
               sourceCollection={record.sourceCollection}
             />
@@ -278,29 +262,15 @@ export const ViewerPage: React.FC = () => {
               </div>
             </div>
           )}
-
-          {activeTab === 'translation' && record.translation && (
-            <div className="bg-[#FBF8F2] border border-[#DED3C2] rounded-xl p-6 sm:p-8 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-[#DED3C2]">
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#713F2B]">
-                  Authenticated {record.translation.language} Edition
-                </span>
-                <span className="text-xs text-[#827567]">Parallel reading authorized</span>
-              </div>
-              <p className="font-serif text-lg leading-relaxed text-[#29251F] whitespace-pre-wrap">
-                {record.translation.text}
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
       {/* Related Archival Items */}
       {relatedRecords.length > 0 && (
-        <div className="pt-10 border-t border-[#DED3C2] space-y-6">
+        <div className="pt-8 border-t border-[#DED3C2] space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-widest text-[#B96535] block mb-1">
+              <span className="text-xs font-semibold uppercase tracking-widest text-[#B96535] block mb-0.5">
                 Contextual Links
               </span>
               <h3 className="font-serif text-2xl font-bold text-[#29251F]">

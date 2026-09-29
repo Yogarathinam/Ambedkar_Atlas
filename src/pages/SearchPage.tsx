@@ -5,17 +5,18 @@ import { archiveService } from '../services/archiveService';
 import { ArchiveCard } from '../components/archive/ArchiveCard';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { EmptyState } from '../components/common/EmptyState';
-import { Search, Clock, Trash2, ArrowRight, Sparkles, Filter } from 'lucide-react';
+import { useVoiceSearch } from '../hooks/useVoiceSearch';
+import { Search, Clock, Trash2, ArrowRight, Sparkles, Filter, Mic, MicOff } from 'lucide-react';
 
 export const SearchPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
-
   const queryParam = searchParams.get('q') || '';
   const [searchInput, setSearchInput] = useState(queryParam);
   const [results, setResults] = useState<ArchiveRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  const { isListening, isSupported, startListening, stopListening } = useVoiceSearch();
 
   useEffect(() => {
     setRecentSearches(archiveService.getRecentSearches());
@@ -43,6 +44,17 @@ export const SearchPage: React.FC = () => {
     }
   };
 
+  const handleVoiceSearch = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening((text) => {
+        setSearchInput(text);
+        setSearchParams({ q: text });
+      });
+    }
+  };
+
   const handleRecentClick = (term: string) => {
     setSearchInput(term);
     setSearchParams({ q: term });
@@ -65,11 +77,11 @@ export const SearchPage: React.FC = () => {
           Search the Heritage Archive
         </h1>
         <p className="text-sm text-[#51483F] mt-1 max-w-xl">
-          Instantly query full text transcripts, speeches, manuscripts, and constitutional debates.
+          Query primary treatises, verified debate speeches, calligraphic drafts, and historical records.
         </p>
       </div>
 
-      {/* Main Search Bar Form */}
+      {/* Main Search Bar Form with Voice Search */}
       <form onSubmit={handleSubmit} className="relative">
         <div className="relative flex items-center">
           <input
@@ -77,9 +89,22 @@ export const SearchPage: React.FC = () => {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search keywords: 'Annihilation of Caste', 'Poona Pact', 'Chavadar Tank', 'Article 14'..."
-            className="w-full pl-12 pr-28 py-4 text-base bg-[#FBF8F2] border-2 border-[#DED3C2] rounded-2xl text-[#29251F] placeholder-[#827567] focus:outline-none focus:border-[#B96535] shadow-xs"
+            className="w-full pl-12 pr-36 py-4 text-base bg-[#FBF8F2] border-2 border-[#DED3C2] rounded-2xl text-[#29251F] placeholder-[#827567] focus:outline-none focus:border-[#B96535] shadow-xs"
           />
           <Search className="w-5 h-5 text-[#827567] absolute left-4 pointer-events-none" />
+
+          {/* Voice Search Button */}
+          <button
+            type="button"
+            onClick={handleVoiceSearch}
+            title={isListening ? 'Listening... click to stop' : 'Search by voice'}
+            className={`absolute right-24 p-2 rounded-xl transition-colors ${
+              isListening ? 'bg-red-500 text-white animate-pulse' : 'text-[#827567] hover:text-[#B96535] hover:bg-[#F5EBDD]'
+            }`}
+          >
+            {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+          </button>
+
           <button
             type="submit"
             className="absolute right-2.5 px-5 py-2.5 bg-[#B96535] hover:bg-[#713F2B] text-white text-sm font-semibold rounded-xl transition-colors shadow-2xs"

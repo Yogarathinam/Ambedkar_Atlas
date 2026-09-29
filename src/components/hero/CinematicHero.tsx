@@ -1,40 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Search, ArrowRight, Compass, Sparkles, SlidersHorizontal, BookOpen, Clock } from 'lucide-react';
+import { Search, ArrowRight, BookOpen, Clock } from 'lucide-react';
 import { HERO_ASSETS } from '../../assets/hero/heroAssets';
 
 export const CinematicHero: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [introSkipped, setIntroSkipped] = useState(() => {
+  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  const [hasVisited, setHasVisited] = useState(() => {
     try {
-      return sessionStorage.getItem('ambedkar_hero_intro_seen') === 'true';
+      return sessionStorage.getItem('ambedkar_hero_seen') === 'true';
     } catch {
       return false;
     }
   });
 
-  const heroContainerRef = useRef<HTMLDivElement>(null);
-  const prefersReducedMotion = useReducedMotion();
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('ambedkar_hero_seen', 'true');
+    } catch {
+      // ignore
+    }
+  }, []);
 
-  // Mouse parallax tracking
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (prefersReducedMotion) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setMousePos({ x, y });
-  };
-
-  const handleSkipIntro = () => {
-    setIntroSkipped(true);
-    try {
-      sessionStorage.setItem('ambedkar_hero_intro_seen', 'true');
-    } catch {
-      // ignore
-    }
+    setMouseOffset({ x, y });
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -46,127 +44,115 @@ export const CinematicHero: React.FC = () => {
     }
   };
 
+  // Entrance durations: 0 if previously visited or reduced motion
+  const animDuration = prefersReducedMotion || hasVisited ? 0.3 : 1.1;
+  const staggerDelay = prefersReducedMotion || hasVisited ? 0 : 0.25;
+
   return (
-    <div
-      ref={heroContainerRef}
+    <section
+      ref={containerRef}
       onMouseMove={handleMouseMove}
-      className="relative min-h-[640px] md:min-h-[720px] lg:min-h-[760px] overflow-hidden bg-[#F5EBDD] border-b border-[#DED3C2] flex items-center paper-grain selection:bg-[#B96535]/20"
+      className="relative min-h-[580px] sm:min-h-[640px] lg:min-h-[680px] overflow-hidden bg-[#F5EBDD] flex items-center paper-grain border-b border-[#DED3C2]"
+      aria-label="Ambedkar Atlas Hero"
     >
-      {/* 1. Backdrop Atmosphere Layer (Distant depth) */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none opacity-85 z-0"
-        style={{
-          backgroundImage: `url(${HERO_ASSETS.backdrop})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          x: prefersReducedMotion ? 0 : mousePos.x * -12,
-          y: prefersReducedMotion ? 0 : mousePos.y * -8,
-        }}
-      />
+      {/* Subtle Archival Ambient Lighting */}
+      <div className="absolute inset-0 bg-radial from-[#FFFDF9]/60 via-[#F5EBDD]/40 to-transparent pointer-events-none z-0" />
 
-      {/* Archival Vignette overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#F5EBDD]/90 via-[#F5EBDD]/60 to-transparent z-1 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#F5EBDD] via-transparent to-[#F5EBDD]/40 z-1 pointer-events-none" />
+      {/* Background Decorative Archival Colonnade Lines (Subtle) */}
+      <div className="absolute top-0 right-0 w-1/2 h-full opacity-15 pointer-events-none bg-[radial-gradient(#713F2B_1px,transparent_1px)] [background-size:24px_24px] z-0" />
 
-      {/* 2. Midground Layer: Historical Crowd Silhouette (Center to Right) */}
+      {/* Layer 1: Crowd SVG Background (Facing left towards Ambedkar) */}
       <motion.div
-        className="absolute bottom-0 right-0 w-[85%] md:w-[70%] lg:w-[62%] h-[65%] md:h-[80%] z-2 pointer-events-none"
-        initial={introSkipped ? { opacity: 0.9 } : { opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 0.95, scale: 1 }}
-        transition={{ duration: 1.4, ease: 'easeOut' }}
+        className="absolute bottom-0 right-0 w-full sm:w-[90%] md:w-[80%] lg:w-[72%] xl:w-[68%] h-[55%] sm:h-[65%] md:h-[72%] pointer-events-none z-10"
+        initial={hasVisited ? { opacity: 0.9, y: 0 } : { opacity: 0, y: 25 }}
+        animate={{ opacity: 0.95, y: 0 }}
+        transition={{ duration: animDuration, ease: 'easeOut' }}
         style={{
-          x: prefersReducedMotion ? 0 : mousePos.x * -25,
-          y: prefersReducedMotion ? 0 : mousePos.y * -15,
-        }}
-      >
-        <img
-          src={HERO_ASSETS.historicalCrowd}
-          alt="Historical Gathering Archival Crowd"
-          className="w-full h-full object-contain object-bottom filter sepia-[0.35] contrast-[1.05]"
-        />
-      </motion.div>
-
-      {/* 3. Foreground Hero Layer: Dr. B. R. Ambedkar Silhouette (Left Foreground, Over-the-shoulder view) */}
-      <motion.div
-        className="absolute -bottom-6 -left-8 sm:left-0 md:left-4 lg:left-8 w-[280px] sm:w-[360px] md:w-[460px] lg:w-[540px] h-[75%] sm:h-[85%] md:h-[95%] z-3 pointer-events-none"
-        initial={introSkipped ? { opacity: 1, x: 0 } : { opacity: 0, x: -40 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1.2, delay: introSkipped ? 0 : 0.3, ease: 'easeOut' }}
-        style={{
-          x: prefersReducedMotion ? 0 : mousePos.x * 20,
-          y: prefersReducedMotion ? 0 : mousePos.y * 10,
+          x: prefersReducedMotion ? 0 : mouseOffset.x * -18,
+          y: prefersReducedMotion ? 0 : mouseOffset.y * -10,
         }}
       >
         <div className="relative w-full h-full">
           <img
-            src={HERO_ASSETS.ambedkarPortrait}
-            alt="Dr. B. R. Ambedkar - Archival Silhouette"
-            className="w-full h-full object-contain object-bottom filter drop-shadow-[0_15px_30px_rgba(41,37,31,0.35)]"
+            src={HERO_ASSETS.historicalCrowd}
+            alt="Historical Gathering Audience"
+            className="w-full h-full object-contain object-bottom filter sepia-[0.25] opacity-90"
           />
-          {/* Subtle archival seal indicator badge near figure */}
-          <div className="absolute top-1/3 -right-2 md:right-8 bg-[#FBF8F2]/90 border border-[#DED3C2] shadow-sm rounded-full px-2.5 py-1 text-[10px] font-medium text-[#713F2B] backdrop-blur-xs flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#B96535]"></span>
-            <span>Over-the-shoulder historical perspective</span>
-          </div>
+          {/* Bottom fade gradient to blend seamlessly into Antique Ivory background */}
+          <div className="absolute inset-x-0 bottom-0 h-16 sm:h-24 bg-gradient-to-t from-[#F5EBDD] via-[#F5EBDD]/80 to-transparent pointer-events-none" />
+          <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#F5EBDD] to-transparent pointer-events-none" />
         </div>
       </motion.div>
 
-      {/* 4. Text & Interaction Area (Positioned clearly on center-right and top to ensure zero obstruction) */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 py-16 md:py-24">
+      {/* Layer 2: Dr. B. R. Ambedkar Transparent PNG Foreground (Left Position, Overlapping Audience) */}
+      <motion.div
+        className="absolute bottom-0 left-0 sm:left-2 md:left-6 lg:left-10 w-[260px] sm:w-[350px] md:w-[440px] lg:w-[500px] xl:w-[540px] h-[78%] sm:h-[88%] md:h-[95%] pointer-events-none z-20"
+        initial={hasVisited ? { opacity: 1, x: 0 } : { opacity: 0, x: -35 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: animDuration, delay: staggerDelay, ease: 'easeOut' }}
+        style={{
+          x: prefersReducedMotion ? 0 : mouseOffset.x * 22,
+          y: prefersReducedMotion ? 0 : mouseOffset.y * 12,
+        }}
+      >
+        <div className="relative w-full h-full flex items-end">
+          <img
+            src={HERO_ASSETS.ambedkarPortrait}
+            alt="Dr. B. R. Ambedkar"
+            className="w-full h-full object-contain object-bottom filter drop-shadow-[0_12px_24px_rgba(41,37,31,0.22)]"
+          />
+          {/* Subtle bottom fade so base dissolves naturally */}
+          <div className="absolute inset-x-0 bottom-0 h-8 sm:h-12 bg-gradient-to-t from-[#F5EBDD] to-transparent pointer-events-none" />
+        </div>
+      </motion.div>
+
+      {/* Layer 3: Editorial Typography & Actions (Right Side, No Card Frame, Directly on Ivory Ground) */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-30 py-12 sm:py-16 md:py-20">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
           
-          {/* Spacer for the foreground silhouette on left */}
-          <div className="hidden lg:block lg:w-5/12 xl:w-5/12 shrink-0 h-4" />
+          {/* Spacer to guarantee Ambedkar's silhouette on the left is never obstructed */}
+          <div className="hidden lg:block lg:w-5/12 xl:w-5/12 shrink-0 pointer-events-none" />
 
-          {/* Editorial Content Card */}
+          {/* Clean Editorial Content Column (Seamless, No Box/Card) */}
           <motion.div
-            className="w-full lg:w-7/12 xl:w-7/12 bg-[#FBF8F2]/88 backdrop-blur-md p-6 sm:p-8 md:p-10 rounded-2xl border border-[#DED3C2] shadow-xl relative"
-            initial={introSkipped ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            className="w-full lg:w-7/12 xl:w-7/12 max-w-2xl lg:ml-auto space-y-5"
+            initial={hasVisited ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: introSkipped ? 0 : 0.4 }}
+            transition={{ duration: animDuration, delay: staggerDelay * 2, ease: 'easeOut' }}
           >
-            {/* Archival Eyebrow Tag */}
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E7D5B9]/70 text-[#713F2B] text-xs font-semibold tracking-wider uppercase border border-[#DED3C2]">
+            {/* Archival Eyebrow */}
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E7D5B9]/80 text-[#713F2B] text-xs font-semibold tracking-wider uppercase border border-[#DED3C2]">
                 <img src="/seal.svg" alt="" className="w-3.5 h-3.5" />
                 <span>The National Digital Heritage Archive</span>
               </span>
-
-              {!introSkipped && (
-                <button
-                  onClick={handleSkipIntro}
-                  className="text-xs text-[#827567] hover:text-[#29251F] underline transition-colors"
-                >
-                  Skip opening reveal
-                </button>
-              )}
             </div>
 
-            {/* Main Editorial Display Heading */}
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold text-[#29251F] tracking-tight leading-[1.12] mb-4">
+            {/* Display Heading */}
+            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold text-[#29251F] tracking-tight leading-[1.12]">
               Architect of Equality. <br />
               <span className="text-[#B96535] italic font-normal">Voice of the Republic.</span>
             </h1>
 
-            {/* Short Narrative Intro */}
-            <p className="text-base sm:text-lg text-[#51483F] leading-relaxed mb-6 font-normal">
-              Step into the comprehensive digital heritage archive of <strong className="font-semibold text-[#29251F]">Dr. Bhimrao Ramji Ambedkar</strong> (1891–1956). Explore original treatises, historic addresses, calligraphic constitutional drafts, authenticated audio recordings, and an AI-simulated research assistant.
+            {/* Concise Editorial Intro */}
+            <p className="text-base sm:text-lg text-[#51483F] leading-relaxed font-normal">
+              Explore the verified writings, historic speeches, constitutional deliberations, and audiovisual heritage of <strong className="font-semibold text-[#29251F]">Dr. Bhimrao Ramji Ambedkar</strong> (1891–1956).
             </p>
 
             {/* Prominent Search Bar */}
-            <form onSubmit={handleSearchSubmit} className="mb-6">
-              <div className="relative flex items-center">
+            <form onSubmit={handleSearchSubmit} className="pt-1">
+              <div className="relative flex items-center max-w-xl">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search Annihilation of Caste, Constituent Assembly, Mahad..."
-                  className="w-full pl-11 pr-28 py-3.5 text-sm sm:text-base bg-[#FFF] border border-[#DED3C2] rounded-xl text-[#29251F] placeholder-[#827567] focus:outline-none focus:ring-2 focus:ring-[#B96535] focus:border-transparent shadow-xs transition-all"
+                  className="w-full pl-11 pr-28 py-3.5 text-sm sm:text-base bg-[#FBF8F2] border-2 border-[#DED3C2] rounded-xl text-[#29251F] placeholder-[#827567] focus:outline-none focus:border-[#B96535] shadow-xs transition-all"
                 />
                 <Search className="w-5 h-5 text-[#827567] absolute left-3.5 pointer-events-none" />
                 <button
                   type="submit"
-                  className="absolute right-2 px-4 py-2 bg-[#B96535] hover:bg-[#713F2B] text-white text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 shadow-xs"
+                  className="absolute right-2 px-4 py-2 bg-[#B96535] hover:bg-[#713F2B] text-white text-xs sm:text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-xs"
                 >
                   <span>Explore</span>
                   <ArrowRight className="w-4 h-4" />
@@ -174,14 +160,14 @@ export const CinematicHero: React.FC = () => {
               </div>
             </form>
 
-            {/* CTAs and Direct Journey Links */}
-            <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-[#DED3C2]">
+            {/* Key Action Buttons */}
+            <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
                 onClick={() => navigate('/archive')}
                 className="px-5 py-2.5 bg-[#29251F] hover:bg-[#3E3830] text-[#FBF8F2] text-sm font-semibold rounded-lg transition-all shadow-xs flex items-center gap-2"
               >
                 <BookOpen className="w-4 h-4 text-[#B96535]" />
-                <span>Explore Catalog (200+ Records)</span>
+                <span>Explore Catalog</span>
               </button>
 
               <button
@@ -193,15 +179,10 @@ export const CinematicHero: React.FC = () => {
               </button>
             </div>
 
-            {/* Asset Replacement Notice for Evaluator */}
-            <div className="mt-4 pt-3 flex items-center justify-between text-[11px] text-[#827567]">
-              <span>Curated Archival Vectors • Zero broken assets</span>
-              <span className="text-[#713F2B]">Custom hero PNGs supported in <code>src/assets/hero/</code></span>
-            </div>
           </motion.div>
 
         </div>
       </div>
-    </div>
+    </section>
   );
 };
