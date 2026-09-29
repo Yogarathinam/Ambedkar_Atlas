@@ -1,68 +1,135 @@
 import { EIGHTH_SCHEDULE_LANGUAGES, IndianLanguage } from '../data/indianLanguages';
 
-// Authentic full-text translations for Annihilation of Caste and speeches
-const CURATED_TRANSLATIONS: Record<string, Record<string, string>> = {
-  'annihilation-of-caste-1936': {
-    mr: `मी या विषयावर पुन्हा आपल्यासमोर उपस्थित राहण्याची आवश्यकता भासेल असा विचार कधी केला नव्हता... 
-भारतात तरी स्वर्गाच्या मार्गाप्रमाणेच सामाजिक सुधारणेचा मार्ग अनेक अडचणींनी आणि काट्याकुट्यांनी भरलेला आहे. राजकीय क्रांत्यांच्या आधी नेहमीच सामाजिक आणि धार्मिक क्रांत्या झालेल्या असतात ही गोष्ट सहसा सर्वमान्य मानली जात नाही.
+export interface TranslationResult {
+  translatedText: string;
+  sourceText: string;
+  language: IndianLanguage;
+  provider: 'curated_archival' | 'mymemory_live' | 'unconfigured_fallback';
+  isMachineGenerated: boolean;
+  statusMessage: string;
+}
 
-लूथरने सुरू केलेली धार्मिक सुधारणा ही युरोपीय जनतेच्या राजकीय मुक्तीची पूर्वगामी ठरली. इंग्लंडमध्ये प्युरिटॅनिझममुळे राजकीय स्वातंत्र्याची स्थापना झाली. भारतात छत्रपती शिवाजी महाराजांच्या राजकीय क्रांतीच्या आधी महाराष्ट्रातील संतांनी घडवून आणलेली धार्मिक आणि सामाजिक सुधारणा अस्तित्वात आली होती.
-
-जात ही केवळ श्रमाची विभागणी नाही, तर ती श्रमिकांची विभागणी आहे. ही एक अशी उतरंड आहे ज्यामध्ये कामगारांचे वर्ग एकमेकांच्या वर विषमतेने रचले गेले आहेत. जगातील इतर कोणत्याही देशात श्रमाच्या विभागणीसोबत श्रमिकांची अशी अस्वाभाविक उतरंड पाहायला मिळत नाही. आपण जातीच्या पायावर कोणत्याही चिरस्थायी गोष्टीची उभारणी करू शकत नाही. जातीच्या पायावर राष्ट्र उभे राहू शकत नाही, आणि नैतिकतेची निर्मितीही होऊ शकत नाही. जातीच्या पायावर तुम्ही जे काही निर्माण कराल, त्याला तडे जातील आणि ते कधीही एकसंध अखंड राहू शकणार नाही.`,
-    hi: `मैंने यह कभी नहीं सोचा था कि मुझे इस विषय पर पुनः आप सभी के समक्ष उपस्थित होना पड़ेगा...
-कम से कम भारत में तो सामाजिक सुधार का मार्ग स्वर्ग के मार्ग की भांति अनेक बाधाओं और कठिनाइयों से भरा हुआ है। सामान्यतः यह अनुभव नहीं किया जाता कि राजनीतिक क्रांतियों से पूर्व सदा ही सामाजिक और धार्मिक क्रांतियां हुई हैं।
-
-मार्टिन लूथर द्वारा प्रारंभ किया गया धार्मिक सुधार यूरोपीय जनता की राजनीतिक मुक्ति की पूर्वपीठिका सिद्ध हुआ। इंग्लैंड में प्यूरिटनवाद ने राजनीतिक स्वतंत्रता की नींव रखी। भारत में छत्रपति शिवाजी महाराज की राजनीतिक क्रांति से पूर्व महाराष्ट्र के संतों द्वारा लाया गया धार्मिक और सामाजिक सुधार आंदोलन घटित हुआ था।
-
-जाति केवल श्रम का विभाजन नहीं है, बल्कि यह श्रमिकों का विभाजन है। यह एक ऐसा सोपानक्रम है जिसमें श्रमिकों के विभिन्न वर्गों को एक-दूसरे के ऊपर श्रेणीबद्ध कर दिया गया है। विश्व के किसी अन्य देश में श्रम-विभाजन के साथ श्रमिकों का ऐसा अस्वाभाविक श्रेणीकरण विद्यमान नहीं है। आप जाति की नींव पर किसी भी स्थायी वस्तु का निर्माण नहीं कर सकते। जाति के आधार पर न तो एक राष्ट्र का निर्माण हो सकता है और न ही नैतिकता की स्थापना हो सकती है। जाति की नींव पर आप जो कुछ भी खड़ा करेंगे, उसमें दरारें पड़ेंगी और वह कभी एक संपूर्ण इकाई नहीं बन सकेगा।`,
-    ta: `இந்த விஷயத்தில் நான் மீண்டும் உங்கள் முன் பேச வேண்டியிருக்கும் என்று நான் நினைத்ததில்லை...
-இந்தியாவில் சொர்க்கத்திற்கான பாதையைப் போலவே சமூக சீர்திருத்தப் பாதையும் எண்ணற்ற தடைகளும் முட்களும் நிறைந்ததாகவே உள்ளது. அரசியல் புரட்சிகளுக்கு முன்பாக எப்போதுமே சமூக மற்றும் ஆன்மீகப் புரட்சிகள் நிகழ்ந்துள்ளன என்பதை பலர் உணர்வதில்லை.
-
-லூத்தரால் தொடங்கப்பட்ட மத சீர்திருத்தம் ஐரோப்பிய மக்களின் அரசியல் விடுதலைக்கு முன்னோடியாக அமைந்தது. இங்கிலாந்தில் பியூரிடனிசம் அரசியல் சுதந்திரத்திற்கு வழிவகுத்தது. இந்தியாவில் சத்ரபதி சிவாஜியின் அரசியல் எழுச்சிக்கு முன்பாக மகாராஷ்டிராவின் துறவிகள் சமூக மற்றும் ஆன்மீக சீர்திருத்தத்தை முன்னெடுத்தனர்.
-
-சாதி என்பது வெறும் உழைப்பின் பிரிவு மட்டுமல்ல, அது உழைப்பாளர்களின் செயற்கையான பிரிவினையாகும். இதில் தொழிலாளர்களின் அடுக்குகள் ஒன்றுக்கு மேல் ஒன்றாக அநீதியாக வகைப்படுத்தப்பட்டுள்ளன. உலகின் எந்தவொரு நாட்டிலும் உழைப்புப் பிரிவினையுடன் தொழிலாளர்களின் இத்தகைய இயற்கைக்கு மாறான படிநிலை இல்லை. சாதியின் அடித்தளத்தில் உங்களால் எந்தவொரு தேசத்தையும் அறநெறியையும் கட்டியெழுப்ப முடியாது. சாதியின் மீது நீங்கள் எதை உருவாக்கினாலும் அது பிளவடையும், ஒருபோதும் முழுமையாக நிலைத்திருக்காது.`,
-    bn: `আমি ভাবিনি যে এই বিষয়ে আমাকে আবারও আপনাদের সামনে উপস্থিত হতে হবে...
-ভারতে স্বর্গের পথের মতোই সমাজ সংস্কারের পথ অত্যন্ত বন্ধুর এবং নানা প্রতিকূলতায় পূর্ণ। সাধারণ মানুষ প্রায়শই অনুধাবন করেন না যে রাজনৈতিক বিপ্লবের আগে সর্বদা সামাজিক ও ধর্মীয় বিপ্লব সংঘটিত হয়েছে।
-
-লুথার কর্তৃক সূচিত ধর্মীয় সংস্কার ইউরোপীয় মানুষের রাজনৈতিক মুক্তির সূচনা করেছিল। ইংল্যান্ডে পিউরিটানবাদ রাজনৈতিক স্বাধীনতার প্রতিষ্ঠা ঘটিয়েছিল। ভারতে ছত্রপতি শিবাজীর রাজনৈতিক বিপ্লবের পূর্বে মহারাষ্ট্রের সাধক-সন্তদের দ্বারা সূচিত ধর্মীয় ও সামাজিক সংস্কার আন্দোলন কার্যকর হয়েছিল।
-
-জাতিভেদ প্রথা কেবল শ্রমের বিভাজন নয়, বরং এটি শ্রমিকদের বিভাজন। এটি একটি ক্রমবিন্যাস যেখানে শ্রমিকদের এক শ্রেণীর ওপরে অন্য শ্রেণীকে কৃত্রিমভাবে চাপিয়ে দেওয়া হয়েছে। বিশ্বের আর কোনো দেশে শ্রম বিভাজনের সাথে শ্রমিকদের এমন অস্বাভাবিক ক্রমবিভাজন দেখতে পাওয়া যায় না। আপনারা কখনোই জাতির ভিত্তির ওপর একটি স্থায়ী রাষ্ট্র বা নৈতিকতা গড়ে তুলতে পারবেন না। জাতিভেদের ওপর আপনারা যা-ই নির্মাণ করবেন, তাতে ফাটল ধরবে এবং তা কখনো অখণ্ড থাকবে না।`,
-    te: `నేను ఈ విషయంపై మళ్ళీ మీ ముందుకు రావాల్సి వస్తుందని ఎన్నడూ అనుకోలేదు...
-భారతదేశంలో స్వర్గపు మార్గంలాగే సాంఘిక సంస్కరణల మార్గం కూడా అనేక అవరోధాలతో, కష్టాలతో కూడుకున్నది. రాజకీయ విప్లవాలకు ముందే ఎల్లప్పుడూ సాంఘిక, మత విప్లవాలు జరుగుతాయన్న వాస్తవాన్ని సాధారణంగా ఎవరూ గుర్తించరు.
-
-లూథర్ ప్రారంభించిన మత సంస్కరణ యూరోపియన్ ప్రజల రాజకీయ విముక్తికి నాంది పలికింది. ఇంగ్లాండ్‌లో ప్యూరిటనిజం రాజకీయ స్వేచ్ఛ స్థాపనకు దారితీసింది. భారతదేశంలో ఛత్రపతి శివాజీ రాజకీయ విప్లవానికి ముందే మహారాష్ట్ర సాధువులు తెచ్చిన సాంఘిక, మత సంస్కరణలు జరిగాయి.
-
-కులం అంటే కేవలం శ్రమ విభజన మాత్రమే కాదు, అది శ్రామికుల విభజన. శ్రామికులను ఒకరిపై ఒకరిని అసమానంగా శ్రేణీకరించిన నిచ్చెనమెట్ల వ్యవస్థ ఇది. ప్రపంచంలోని మరే ఇతర దేశంలోనూ శ్రమ విభజనతో పాటు శ్రామికుల ఇలాంటి అసహజ విభజన కనిపించదు. కులం పునాదులపై మీరు ఏదీ నిర్మించలేరు; ఒక జాతిని నిర్మించలేరు, నైతికతను నిలబెట్టలేరు. కులం ఆధారంగా మీరు నిర్మించే ప్రతిదానిలోనూ పగుళ్లు ఏర్పడతాయి, అది ఎన్నటికీ సమగ్రమైనదిగా ఉండదు.`,
-    gu: `મેં વિચાર્યું ન હતું કે મારે આ વિષય પર ફરીથી આપ સમક્ષ આવવું પડશે...
-ભારતમાં સ્વર્ગના માર્ગની જેમ જ સામાજિક સુધારણાનો માર્ગ પણ અનેક વિઘ્નો અને કાંટાઓથી ભરેલો છે. સામાન્ય રીતે એ અનુભવાતું નથી કે રાજકીય ક્રાંતિઓ પહેલાં હંમેશાં સામાજિક અને ધાર્મિક ક્રાંતિઓ થયેલી હોય છે.
-
-લૂથર દ્વારા શરૂ કરાયેલ ધાર્મિક સુધારણા યુરોપિયન પ્રજાની રાજકીય મુક્તિની પુરોગામી બની હતી. ઇંગ્લેન્ડમાં પ્યુરિટનિઝમે રાજકીય સ્વતંત્રતા સ્થાપી. ભારતમાં છત્રપતિ શિવાજીની રાજકીય ક્રાંતિ પહેલાં મહારાષ્ટ્રના સંતો દ્વારા સામાજિક અને ધાર્મિક સુધારણા લવાઈ હતી.
-
-જ્ઞાતિ એ માત્ર શ્રમનું વિભાજન નથી, પરંતુ શ્રમિકોનું વિભાજન છે. તે એક એવી અકુદરતી શ્રેણીબદ્ધતા છે જેમાં શ્રમિકોને એકબીજાની ઉપર ગોઠવવામાં આવ્યા છે. જ્ઞાતિના પાયા પર તમે રાષ્ટ્રનું નિર્માણ કે નૈતિકતાનું નિર્માણ કરી શકતા નથી. જ્ઞાતિના પાયા પર તમે જે કંઈપણ રચશો, તેમાં તિરાડો પડશે અને તે ક્યારેય એક અખંડ બની શકશે નહીં.`,
-    kn: `ಈ ವಿಷಯದ ಕುರಿತು ನಾನು ಮತ್ತೆ ನಿಮ್ಮ ಮುಂದೆ ನಿಲ್ಲಬೇಕಾಗಿ ಬರುತ್ತದೆ ಎಂದು ನಾನು ಭಾವಿಸಿರಲಿಲ್ಲ...
-ಭಾರತದಲ್ಲಿ ಸ್ವರ್ಗದ ಹಾದಿಯಂತೆ ಸಾಮಾಜಿಕ ಸುಧಾರಣೆಯ ಮಾರ್ಗವೂ ಅನೇಕ ತೊಡಕುಗಳು ಮತ್ತು ಕಲ್ಲುಮುಳ್ಳುಗಳಿಂದ ಕೂಡಿದೆ. ರಾಜಕೀಯ ಕ್ರಾಂತಿಗಳಿಗಿಂತ ಮೊದಲು ಯಾವಾಗಲೂ ಸಾಮಾಜಿಕ ಮತ್ತು ಧಾರ್મિક ಕ್ರಾಂತಿಗಳು ನಡೆದಿವೆ ಎಂಬುದನ್ನು ಜನರು ಸಾಮಾನ್ಯವಾಗಿ ಗ್ರಹಿಸುವುದಿಲ್ಲ.
-
-ಲೂಥರ್ ಪ್ರಾರಂಭಿಸಿದ ಧಾರ್ಮಿಕ ಸುಧಾರಣೆಯು ಯುರೋಪಿಯನ್ ಜನರ ರಾಜಕೀಯ ವಿಮೋಚನೆಗೆ ಮುನ್ನುಡಿಯಾಯಿತು. ಇಂಗ್ಲೆಂಡಿನಲ್ಲಿ ಪ್ಯೂರಿಟನಿಸಂ ರಾಜಕೀಯ ಸ್ವಾತಂತ್ರ್ಯಕ್ಕೆ ಕಾರಣವಾಯಿತು. ಭಾರತದಲ್ಲಿ ಛತ್ರಪತಿ ಶಿವಾಜಿಯವರ ರಾಜಕೀಯ ಕ್ರಾಂತಿಗೆ ಮುಂಚಿತವಾಗಿ ಮಹಾರಾಷ್ಟ್ರದ ಸಂತರು ತಂದ ಧಾರ್ಮಿಕ ಮತ್ತು ಸಾಮಾಜಿಕ ಸುಧಾರಣೆಗಳು ನಡೆದಿದ್ದವು.
-
-ಜಾತಿ ಕೇವಲ ಶ್ರಮದ ವಿಭಜನೆಯಲ್ಲ, ಅದು ಶ್ರಮಿಕರ ವಿಭಜನೆಯಾಗಿದೆ. ಶ್ರಮಿಕರನ್ನು ಒಬ್ಬರ ಮೇಲೊಬ್ಬರಂತೆ ಏಣಿಶ್ರೇಣಿಯಲ್ಲಿ ಇರಿಸಿರುವ ಅಸ್ವಾಭಾವಿಕ ವ್ಯವಸ್ಥೆ ಇದು. ಜಾತಿಯ ತಳಹದಿಯ ಮೇಲೆ ನೀವು ಏನನ್ನೂ ನಿರ್ಮಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ; ರಾಷ್ಟ್ರವನ್ನು ನಿರ್ಮಿಸಲಾಗುವುದಿಲ್ಲ, ನೈತಿಕತೆಯನ್ನು ಕಾಯ್ದುಕೊಳ್ಳಲಾಗುವುದಿಲ್ಲ. ಜಾತಿಯ ಮೇಲೆ ನೀವು ಕಟ್ಟುವ ಯಾವುದೇ ವ್ಯವಸ್ಥೆಯೂ ಬಿರುಕುಬಿಡುತ್ತದೆ.`,
-    ur: `مجھے یہ گمان نہیں تھا کہ مجھے اس موضوع پر دوبارہ آپ کے روبرو آنا پڑے گا...
-کم از کم ہندوستان میں تو سماجی اصلاح کی راہ جنت کی راہ کی مانند بے شمار کانٹوں اور دشواریوں سے پُر ہے۔ عام طور پر یہ تسلیم نہیں کیا جاتا کہ سیاسی انقلابات سے پہلے ہمیشہ سماجی اور مذہبی انقلابات برپا ہوئے ہیں۔
-
-مارٹن لوتھر کی مذہبی اصلاح نے یورپی اقوام کی سیاسی آزادی کی راہ ہموار کی۔ انگلستان میں پیوریٹن ازم نے سیاسی حریت کی بنیاد رکھی۔ ہندوستان میں چھترپتی شیواجی کے سیاسی انقلاب سے پہلے مہاراشٹر کے صوفیائے کرام اور سنتوں کی سماجی تحریک رونما ہوئی تھی۔
-
-ذات پات کا نظام محض تقسیمِ کار نہیں ہے، بلکہ یہ مزدوروں اور انسانوں کی تقسیم ہے۔ یہ انسانوں کو ایک دوسرے کے اوپر ناہموار درجوں میں تقسیم کرتا ہے۔ دنیا کے کسی اور ملک میں کام کی تقسیم کے ساتھ ساتھ انسانوں کی ایسی غیر فطری درجہ بندی موجود نہیں ہے۔ آپ ذات پات کی بنیاد پر نہ تو قوم تعمیر کر سکتے ہیں اور نہ ہی اخلاقیات۔ ذات پات کی بنیاد پر آپ جو کچھ بھی تعمیر کریں گے، اس میں دراڑیں پڑ جائیں گی اور وہ کبھی ایک مکمل اکائی نہیں بن سکے گا۔`,
-    sa: `नाहं चिन्तितवान् यन्मया पुनरप्यस्मिन् विषये भवतां पुरतः उपस्थातव्यं भविष्यतीति...
-भारते तु स्वर्गमार्ग इव समाजसुधारस्य पन्थाः अनेकैः विघ्नैः कण्टकैश्च व्याप्तः वर्तते। सर्वसाधारणतया एतन्न ज्ञायते यद् राजनैतिकक्रान्तिभ्यः पूर्वं सदैव सामाजिक-धार्मिकक्रान्तयः अभवन्।
-
-लूथरेण प्रारब्धः धार्मिकसुधारः यूरोपीयजनानां राजनैतिकमुक्तेः पूर्वगामी अभवत्। आङ्ग्लदेशे प्यूरितानवादेन राजनैतिकस्वातन्त्र्यं संस्थापितम्। भारते छत्रपतेः शिवाजीमहाराजस्य राजनैतिकक्रान्तेः प्राक् एव महाराष्ट्रस्य सन्तैः सामाजिकधार्मिकसुधारस्य आन्दोलनं कृतम्।
-
-जातिः केवलं कर्मविभागः नास्ति, अपि तु सा कर्मकराणां (श्रमिकतानां) विभागः वर्तते। अयं तादृशः सोपानक्रमः यत्र मानवाः परस्परम् उच्चनीचक्रमेण श्रेणीबद्धाः सन्ति। विश्वस्य अन्यस्मिन् कस्मिन्नपि देशे श्रमविभागेन सह मानवानाम् एतादृशः अस्वाभाविकः भेदो न दृश्यते। जातेः आधारे युष्माभिः राष्ट्रस्य निर्माणं वा नैतिकतायाः संस्थापनं वा कर्तुं न शक्यते। जातेः उपरि यत्किञ्चिदपि निर्मीयते तस्मिन् भेदाः भविष्यन्ति, तत् कदापि अखण्डं न स्यात्।`
+// Curated verified archival translations for prominent passages (Annihilation of Caste, etc.)
+const CURATED_ARCHIVAL_SNIPPETS: Record<string, Record<string, string>> = {
+  mr: {
+    "caste is not merely division of labour": "जात ही केवळ श्रमाची विभागणी नाही, तर ती श्रमिकांची विभागणी आहे. ही एक अशी उतरंड आहे ज्यामध्ये कामगारांचे वर्ग एकमेकांच्या वर विषमतेने रचले गेले आहेत.",
+    "cultivation of mind should be the ultimate aim": "मनाची मशागत हेच मानवी अस्तित्वाचे अंतिम ध्येय असले पाहिजे.",
+    "for a successful revolution it is not enough that there is discontent": "यशस्वी क्रांतीसाठी केवळ असंतोष असणे पुरेसे नाही; राजकीय व सामाजिक हक्कांच्या न्यायाची आणि महत्त्वाची दृढ जाणीव असणे आवश्यक आहे."
+  },
+  hi: {
+    "caste is not merely division of labour": "जाति केवल श्रम का विभाजन नहीं है, बल्कि यह श्रमिकों का विभाजन है। यह एक ऐसा सोपानक्रम है जिसमें श्रमिकों को एक-दूसरे के ऊपर श्रेणीबद्ध कर दिया गया है।",
+    "cultivation of mind should be the ultimate aim": "मन का विकास ही मानव अस्तित्व का अंतिम उद्देश्य होना चाहिए।",
+    "for a successful revolution it is not enough that there is discontent": "सफल क्रांति के लिए केवल असंतोष ही पर्याप्त नहीं है; राजनीतिक और सामाजिक अधिकारों की न्यायसंगतता और आवश्यकता का गहरा विश्वास होना अनिवार्य है।"
   }
 };
 
-export const translationService = {
+class TranslationService {
   /**
-   * Translate full transcription into any of the 22 Indian Languages
+   * Translate a block of text into any of the 22 Eighth Schedule Indian languages
+   */
+  async translateText(
+    text: string,
+    targetLanguageCode: string,
+    pageContext?: { volumeTitle?: string; pageNumber?: number }
+  ): Promise<TranslationResult> {
+    const language = EIGHTH_SCHEDULE_LANGUAGES.find((l) => l.code === targetLanguageCode) || EIGHTH_SCHEDULE_LANGUAGES[0];
+
+    // If target is English or text is empty, return original
+    if (targetLanguageCode === 'en' || !text.trim()) {
+      return {
+        translatedText: text,
+        sourceText: text,
+        language,
+        provider: 'curated_archival',
+        isMachineGenerated: false,
+        statusMessage: 'Original primary archival text displayed.'
+      };
+    }
+
+    // Split text into reasonable chunks (paragraphs) to preserve structure
+    const paragraphs = text.split('\n\n').filter((p) => p.trim().length > 0);
+    const translatedParagraphs: string[] = [];
+    let usedProvider: 'curated_archival' | 'mymemory_live' | 'unconfigured_fallback' = 'unconfigured_fallback';
+
+    try {
+      // Translate up to first 8 paragraphs to respect latency and rate limits
+      for (const para of paragraphs.slice(0, 8)) {
+        const cleanPara = para.trim();
+        
+        // Check curated dictionary
+        const lowerPara = cleanPara.toLowerCase();
+        let matchedCurated: string | null = null;
+        if (CURATED_ARCHIVAL_SNIPPETS[targetLanguageCode]) {
+          for (const [key, val] of Object.entries(CURATED_ARCHIVAL_SNIPPETS[targetLanguageCode])) {
+            if (lowerPara.includes(key)) {
+              matchedCurated = val;
+              break;
+            }
+          }
+        }
+
+        if (matchedCurated) {
+          translatedParagraphs.push(matchedCurated);
+          usedProvider = 'curated_archival';
+          continue;
+        }
+
+        // Live API call with timeout
+        const queryText = cleanPara.slice(0, 450); // safe chunk size
+        const apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(queryText)}&langpair=en|${targetLanguageCode}`;
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+        const response = await fetch(apiUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          const translatedChunk = data?.responseData?.translatedText;
+          if (translatedChunk && !translatedChunk.includes('MYMEMORY WARNING')) {
+            translatedParagraphs.push(translatedChunk);
+            usedProvider = 'mymemory_live';
+            continue;
+          }
+        }
+
+        // Fallback for paragraph if API had issue
+        translatedParagraphs.push(`[${language.name} — ${language.nativeName}]\n${cleanPara}`);
+      }
+
+      // If document had more paragraphs, append remaining
+      if (paragraphs.length > 8) {
+        translatedParagraphs.push(`\n... [Remaining ${paragraphs.length - 8} paragraphs retained in original text for performance] ...\n` + paragraphs.slice(8).join('\n\n'));
+      }
+
+      return {
+        translatedText: translatedParagraphs.join('\n\n'),
+        sourceText: text,
+        language,
+        provider: usedProvider,
+        isMachineGenerated: usedProvider === 'mymemory_live',
+        statusMessage: usedProvider === 'curated_archival' 
+          ? `Verified archival translation in ${language.name} (${language.nativeName})`
+          : usedProvider === 'mymemory_live'
+          ? `Machine-assisted translation in ${language.name} (${language.nativeName}) via MyMemory Translation Engine`
+          : `Translation service standby for ${language.name} (${language.nativeName}). Paragraph structure preserved.`
+      };
+    } catch {
+      // In case of network disconnection, return original text with clear notification
+      return {
+        translatedText: text,
+        sourceText: text,
+        language,
+        provider: 'unconfigured_fallback',
+        isMachineGenerated: false,
+        statusMessage: `Could not reach translation provider for ${language.name}. Displaying verified original text.`
+      };
+    }
+  }
+
+  /**
+   * Legacy adapter for existing TranscriptionReader
    */
   async translateTranscription(
     recordId: string,
@@ -73,39 +140,13 @@ export const translationService = {
     language: IndianLanguage;
     isCertifiedFixture: boolean;
   }> {
-    // Artificial latency for realistic translation synthesis
-    await new Promise((resolve) => setTimeout(resolve, 400));
-
-    const language = EIGHTH_SCHEDULE_LANGUAGES.find((l) => l.code === targetLanguageCode) || EIGHTH_SCHEDULE_LANGUAGES[0];
-
-    if (targetLanguageCode === 'en') {
-      return {
-        translatedText: englishText,
-        language,
-        isCertifiedFixture: true,
-      };
-    }
-
-    // 1. Check if we have a curated archival translation for this record & language
-    if (CURATED_TRANSLATIONS[recordId]?.[targetLanguageCode]) {
-      return {
-        translatedText: CURATED_TRANSLATIONS[recordId][targetLanguageCode],
-        language,
-        isCertifiedFixture: true,
-      };
-    }
-
-    // 2. High-fidelity structural translation preserving every paragraph, indentation, and quotation
-    const paragraphs = englishText.split('\n\n');
-    const translatedParagraphs = paragraphs.map((p) => {
-      // Preserve document structure and provide localized heading/script translation
-      return `[${language.nativeName} — ${language.name} Translation]\n${p}`;
-    });
-
+    const result = await this.translateText(englishText, targetLanguageCode);
     return {
-      translatedText: translatedParagraphs.join('\n\n'),
-      language,
-      isCertifiedFixture: false,
+      translatedText: result.translatedText,
+      language: result.language,
+      isCertifiedFixture: result.provider === 'curated_archival',
     };
   }
-};
+}
+
+export const translationService = new TranslationService();

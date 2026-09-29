@@ -209,23 +209,42 @@ export const ChatConsole: React.FC = () => {
                           {msg.data.citations.map((cite, cIdx) => (
                             <div
                               key={cIdx}
-                              onClick={() => navigate(`/archive/${cite.recordId}`)}
+                              onClick={() => {
+                                if (cite.viewerUrl) {
+                                  navigate(cite.viewerUrl);
+                                } else if (cite.pageNumber) {
+                                  navigate(`/archive/${cite.recordId}?page=${cite.pageNumber}`);
+                                } else {
+                                  navigate(`/archive/${cite.recordId}`);
+                                }
+                              }}
                               className="p-3 bg-[#FBF8F2] hover:bg-[#FFF] border border-[#DED3C2] hover:border-[#B96535] rounded-xl transition-all cursor-pointer flex items-center justify-between gap-3 group shadow-2xs"
                             >
-                              <div className="space-y-0.5">
-                                <div className="flex items-center gap-2">
+                              <div className="space-y-1">
+                                <div className="flex flex-wrap items-center gap-2">
                                   <span className="font-mono text-xs font-bold text-[#B96535]">
                                     {cite.marker}
                                   </span>
                                   <span className="font-serif font-bold text-sm text-[#29251F] group-hover:text-[#B96535] transition-colors">
-                                    {cite.title} ({cite.year})
+                                    {cite.title}
                                   </span>
+                                  {cite.pageNumber && (
+                                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#E7D5B9] text-[#713F2B] font-bold">
+                                      Page #{cite.pageNumber}
+                                    </span>
+                                  )}
                                 </div>
-                                <p className="text-xs text-[#827567] italic truncate max-w-md">
+                                <p className="text-xs text-[#827567] italic line-clamp-2">
                                   "{cite.quoteSnippet}"
                                 </p>
+                                <span className="block text-[11px] text-[#713F2B] font-medium">
+                                  {cite.source}
+                                </span>
                               </div>
-                              <ExternalLink className="w-4 h-4 text-[#827567] group-hover:text-[#B96535] shrink-0" />
+                              <div className="flex items-center gap-1 text-xs text-[#B96535] font-semibold shrink-0 group-hover:underline">
+                                <span>Inspect Page</span>
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </div>
                             </div>
                           ))}
                         </div>

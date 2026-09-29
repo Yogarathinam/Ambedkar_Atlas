@@ -4,17 +4,24 @@ import { FilterState } from '../../types';
 
 interface FilterChipsProps {
   filters: FilterState;
-  onClearFilter: (key: keyof FilterState) => void;
+  onClearFilter?: (key: keyof FilterState) => void;
+  onRemoveFilter?: (key: keyof FilterState) => void;
   onResetAll: () => void;
-  totalCount: number;
+  totalCount?: number;
 }
 
 export const FilterChips: React.FC<FilterChipsProps> = ({
   filters,
   onClearFilter,
+  onRemoveFilter,
   onResetAll,
-  totalCount,
+  totalCount = 0,
 }) => {
+  const handleRemove = (key: keyof FilterState) => {
+    if (onRemoveFilter) onRemoveFilter(key);
+    else if (onClearFilter) onClearFilter(key);
+  };
+
   const hasActiveFilters = 
     Boolean(filters.searchQuery) ||
     filters.category !== 'all' ||
@@ -41,7 +48,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-[#B96535]/15 text-[#B96535] border border-[#B96535]/30">
             Query: "{filters.searchQuery}"
             <button
-              onClick={() => onClearFilter('searchQuery')}
+              onClick={() => handleRemove('searchQuery')}
               className="hover:text-black"
               aria-label="Remove search filter"
             >
@@ -54,7 +61,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-[#E7D5B9] text-[#29251F] border border-[#DED3C2]">
             Category: <strong className="capitalize">{filters.category}</strong>
             <button
-              onClick={() => onClearFilter('category')}
+              onClick={() => handleRemove('category')}
               className="hover:text-red-700"
               aria-label="Remove category filter"
             >
@@ -67,7 +74,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-[#E7D5B9] text-[#29251F] border border-[#DED3C2]">
             Era: <strong>{filters.era.split(':')[0]}</strong>
             <button
-              onClick={() => onClearFilter('era')}
+              onClick={() => handleRemove('era')}
               className="hover:text-red-700"
               aria-label="Remove era filter"
             >
@@ -80,7 +87,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-[#E7D5B9] text-[#29251F] border border-[#DED3C2]">
             Language: <strong>{filters.language}</strong>
             <button
-              onClick={() => onClearFilter('language')}
+              onClick={() => handleRemove('language')}
               className="hover:text-red-700"
               aria-label="Remove language filter"
             >
@@ -93,7 +100,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-[#E7D5B9] text-[#29251F] border border-[#DED3C2]">
             Format: <strong className="capitalize">{filters.format}</strong>
             <button
-              onClick={() => onClearFilter('format')}
+              onClick={() => handleRemove('format')}
               className="hover:text-red-700"
               aria-label="Remove format filter"
             >

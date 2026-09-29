@@ -6,20 +6,27 @@ import { useDevice } from '../../context/DeviceContext';
 
 interface FilterDrawerProps {
   filters: FilterState;
-  onChange: (updates: Partial<FilterState>) => void;
-  onReset: () => void;
-  isOpenMobile: boolean;
-  onCloseMobile: () => void;
+  onChange?: (updates: Partial<FilterState>) => void;
+  onUpdateFilters?: (updates: Partial<FilterState>) => void;
+  onReset?: () => void;
+  isOpenMobile?: boolean;
+  onCloseMobile?: () => void;
+  isMobile?: boolean;
 }
 
 export const FilterDrawer: React.FC<FilterDrawerProps> = ({
   filters,
   onChange,
+  onUpdateFilters,
   onReset,
-  isOpenMobile,
+  isOpenMobile = false,
   onCloseMobile,
+  isMobile,
 }) => {
   const { isKiosk } = useDevice();
+  const handleChange = onUpdateFilters || onChange || (() => {});
+  const showMobile = isMobile !== undefined ? isMobile : isOpenMobile;
+  const handleClose = onCloseMobile || (() => {});
 
   const ERAS: ArchiveEra[] = [
     'all',
@@ -45,7 +52,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
           <span>Archival Collections</span>
           {filters.category !== 'all' && (
             <button
-              onClick={() => onChange({ category: 'all' })}
+              onClick={() => handleChange({ category: 'all' })}
               className="text-xs font-normal text-[#B96535] hover:underline"
             >
               Reset
@@ -54,7 +61,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
         </h4>
         <div className="space-y-1">
           <button
-            onClick={() => onChange({ category: 'all' })}
+            onClick={() => handleChange({ category: 'all' })}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left transition-colors ${
               filters.category === 'all'
                 ? 'bg-[#B96535] text-white font-semibold shadow-xs'
@@ -67,7 +74,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
           {ARCHIVE_CATEGORIES.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => onChange({ category: cat.id })}
+              onClick={() => handleChange({ category: cat.id })}
               className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left transition-colors ${
                 filters.category === cat.id
                   ? 'bg-[#B96535] text-white font-semibold shadow-xs'
@@ -94,7 +101,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
           {ERAS.map((era) => (
             <button
               key={era}
-              onClick={() => onChange({ era })}
+              onClick={() => handleChange({ era })}
               className={`w-full text-left px-3 py-1.5 rounded-md text-xs sm:text-sm transition-all ${
                 filters.era === era
                   ? 'bg-[#29251F] text-[#FBF8F2] font-semibold'
@@ -116,7 +123,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
           {LANGUAGES.map((lang) => (
             <button
               key={lang}
-              onClick={() => onChange({ language: lang })}
+              onClick={() => handleChange({ language: lang })}
               className={`px-3 py-1 rounded-full text-xs transition-colors ${
                 filters.language === lang
                   ? 'bg-[#713F2B] text-white font-medium'
@@ -138,7 +145,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
           {FORMATS.map((fmt) => (
             <button
               key={fmt}
-              onClick={() => onChange({ format: fmt })}
+              onClick={() => handleChange({ format: fmt })}
               className={`px-3 py-1 rounded-full text-xs capitalize transition-colors ${
                 filters.format === fmt
                   ? 'bg-[#B96535] text-white font-medium'
@@ -153,13 +160,15 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
 
       {/* Reset Action */}
       <div className="pt-6 border-t border-[#DED3C2]">
-        <button
-          onClick={onReset}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[#DED3C2] hover:border-[#B96535] text-xs font-semibold text-[#51483F] hover:text-[#B96535] transition-colors bg-[#FBF8F2]"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span>Reset All Filters</span>
-        </button>
+        {onReset && (
+          <button
+            onClick={onReset}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-[#DED3C2] hover:border-[#B96535] text-xs font-semibold text-[#51483F] hover:text-[#B96535] transition-colors bg-[#FBF8F2]"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset All Filters</span>
+          </button>
+        )}
       </div>
 
     </div>
@@ -179,11 +188,11 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
       </div>
 
       {/* Mobile Drawer Backdrop and Slider */}
-      {isOpenMobile && (
+      {showMobile && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div
             className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
-            onClick={onCloseMobile}
+            onClick={handleClose}
           />
           <div className="relative ml-auto w-full max-w-sm bg-[#FBF8F2] h-full shadow-2xl p-6 overflow-y-auto z-10 flex flex-col justify-between">
             <div>
@@ -193,7 +202,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
                   Filter Catalog
                 </span>
                 <button
-                  onClick={onCloseMobile}
+                  onClick={handleClose}
                   className="p-1.5 rounded-md text-[#827567] hover:text-[#29251F] hover:bg-[#E7D5B9]"
                 >
                   <X className="w-6 h-6" />
@@ -203,7 +212,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
             </div>
             <div className="pt-6 mt-6 border-t border-[#DED3C2]">
               <button
-                onClick={onCloseMobile}
+                onClick={handleClose}
                 className="w-full py-3 bg-[#B96535] text-white font-medium rounded-lg text-sm shadow-md"
               >
                 Apply & View Results

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { ArchiveRecord } from '../types';
 import { archiveService } from '../services/archiveService';
+import { InteractivePdfViewer } from '../components/viewer/InteractivePdfViewer';
 import { FacsimileViewer } from '../components/viewer/FacsimileViewer';
 import { TranscriptionReader } from '../components/viewer/TranscriptionReader';
 import { AudioNarrationPlayer } from '../components/viewer/AudioNarrationPlayer';
@@ -16,7 +17,9 @@ import { useBookmarks } from '../context/BookmarkContext';
 
 export const ViewerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  
   const [record, setRecord] = useState<ArchiveRecord | null>(null);
   const [relatedRecords, setRelatedRecords] = useState<ArchiveRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +27,10 @@ export const ViewerPage: React.FC = () => {
   const [citationModalOpen, setCitationModalOpen] = useState(false);
 
   const { isBookmarked, toggleBookmark } = useBookmarks();
+
+  const meaVolume = id ? archiveService.getMeaVolumeById(id) : undefined;
+  const initialPage = parseInt(searchParams.get('page') || '1', 10) || 1;
+  const initialQuery = searchParams.get('q') || '';
 
   useEffect(() => {
     if (!id) return;
@@ -54,10 +61,10 @@ export const ViewerPage: React.FC = () => {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-4">
         <h2 className="font-serif text-3xl font-bold text-[#29251F]">Archival Record Not Found</h2>
-        <p className="text-sm text-[#827567]">The requested item could not be retrieved from the primary catalog.</p>
+        <p className="text-sm text-[#827567]">The requested item could not be retrieved from the primary or MEA catalog.</p>
         <Link
           to="/archive"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#B96535] text-white rounded-lg text-sm font-semibold"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#B96535] text-white rounded-xl text-sm font-semibold"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return to Catalog</span>
@@ -69,7 +76,7 @@ export const ViewerPage: React.FC = () => {
   const bookmarked = isBookmarked(record.id);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
       {/* Compact Breadcrumbs & Back Navigation */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#827567] pb-3 border-b border-[#DED3C2]">
@@ -78,9 +85,13 @@ export const ViewerPage: React.FC = () => {
           <span>/</span>
           <Link to="/archive" className="hover:text-[#29251F]">Archive</Link>
           <span>/</span>
-          <span className="capitalize text-[#713F2B] font-medium">{record.category}</span>
+          {meaVolume ? (
+            <span className="text-[#B96535] font-semibold">Books & Writings (MEA)</span>
+          ) : (
+            <span className="capitalize text-[#713F2B] font-medium">{record.category}</span>
+          )}
           <span>/</span>
-          <span className="text-[#29251F] font-semibold truncate max-w-[220px]">{record.title}</span>
+          <span className="text-[#29251F] font-semibold truncate max-w-[260px]">{record.title}</span>
         </div>
 
         <button
@@ -92,23 +103,23 @@ export const ViewerPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Compact Document Header */}
-      <div className="bg-[#FBF8F2] border border-[#DED3C2] rounded-2xl p-5 sm:p-7 shadow-xs space-y-3.5">
+      {/* Document Header & Metadata Banner */}
+      <div className="bg-[#FBF8F2] border-2 border-[#DED3C2] rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
         
         {/* Badges & Actions */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#E7D5B9] text-[#713F2B] border border-[#DED3C2]">
-              {record.category}
+              {meaVolume ? 'MEA Official Edition' : record.category}
             </span>
             <span className="text-xs text-[#827567] flex items-center gap-1 font-medium">
               <Calendar className="w-3.5 h-3.5" />
               {record.date}
             </span>
-            <span className="text-xs text-[#29251F] bg-[#E7D5B9]/50 px-2.5 py-0.5 rounded border border-[#DED3C2]">
+            <span className="text-xs text-[#29251F] bg-[#E7D5B9]/50 px-2.5 py-0.5 rounded-lg border border-[#DED3C2]">
               {record.language}
             </span>
-            <span className="text-xs text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+            <span className="text-xs text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200 flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               <span>{record.verificationStatus}</span>
             </span>
@@ -147,14 +158,14 @@ export const ViewerPage: React.FC = () => {
           {record.description}
         </p>
 
-        {/* Compact Provenance Details */}
+        {/* Provenance Details */}
         <div className="pt-3 border-t border-[#DED3C2] grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
           <div>
             <span className="text-[#827567] block">Collection:</span>
             <span className="font-medium text-[#29251F]">{record.sourceCollection}</span>
           </div>
           <div>
-            <span className="text-[#827567] block">Accession:</span>
+            <span className="text-[#827567] block">Accession / Code:</span>
             <span className="font-mono text-[#713F2B] font-semibold">{record.accessionNumber}</span>
           </div>
           <div>
@@ -162,8 +173,8 @@ export const ViewerPage: React.FC = () => {
             <span className="font-medium text-[#29251F]">{record.era}</span>
           </div>
           <div>
-            <span className="text-[#827567] block">Location:</span>
-            <span className="font-medium text-[#29251F]">{record.locationCreated || 'Bombay / New Delhi'}</span>
+            <span className="text-[#827567] block">Publisher / Host:</span>
+            <span className="font-medium text-[#29251F]">Government of India (MEA)</span>
           </div>
         </div>
 
@@ -179,48 +190,53 @@ export const ViewerPage: React.FC = () => {
         />
       )}
 
-      {/* Segmented Viewer Tabs: Transcription | Original Facsimile | Historical Summary */}
-      <div className="space-y-4">
-        <div className="flex border-b border-[#DED3C2] gap-2">
-          <button
-            onClick={() => setActiveTab('transcription')}
-            className={`px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
-              activeTab === 'transcription'
-                ? 'bg-[#FBF8F2] text-[#B96535] border-t-2 border-t-[#B96535] border-x border-[#DED3C2]'
-                : 'text-[#827567] hover:text-[#29251F]'
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            <span>Transcription & Translation</span>
-          </button>
+      {/* Viewer Body: MEA Interactive PDF & Extracted Text Viewer OR Standard Tabs */}
+      {meaVolume ? (
+        <InteractivePdfViewer
+          volume={meaVolume}
+          initialPage={initialPage}
+          initialQuery={initialQuery}
+        />
+      ) : (
+        <div className="space-y-4">
+          <div className="flex border-b border-[#DED3C2] gap-2">
+            <button
+              onClick={() => setActiveTab('transcription')}
+              className={`px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
+                activeTab === 'transcription'
+                  ? 'bg-[#FBF8F2] text-[#B96535] border-t-2 border-t-[#B96535] border-x border-[#DED3C2]'
+                  : 'text-[#827567] hover:text-[#29251F]'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              <span>Transcription & Translation</span>
+            </button>
 
-          <button
-            onClick={() => setActiveTab('original')}
-            className={`px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
-              activeTab === 'original'
-                ? 'bg-[#FBF8F2] text-[#B96535] border-t-2 border-t-[#B96535] border-x border-[#DED3C2]'
-                : 'text-[#827567] hover:text-[#29251F]'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            <span>Original Facsimile</span>
-          </button>
+            <button
+              onClick={() => setActiveTab('original')}
+              className={`px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
+                activeTab === 'original'
+                  ? 'bg-[#FBF8F2] text-[#B96535] border-t-2 border-t-[#B96535] border-x border-[#DED3C2]'
+                  : 'text-[#827567] hover:text-[#29251F]'
+              }`}
+            >
+              <Layers className="w-4 h-4" />
+              <span>Original Facsimile</span>
+            </button>
 
-          <button
-            onClick={() => setActiveTab('summary')}
-            className={`px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
-              activeTab === 'summary'
-                ? 'bg-[#FBF8F2] text-[#B96535] border-t-2 border-t-[#B96535] border-x border-[#DED3C2]'
-                : 'text-[#827567] hover:text-[#29251F]'
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>Historical Summary</span>
-          </button>
-        </div>
+            <button
+              onClick={() => setActiveTab('summary')}
+              className={`px-4 py-2.5 text-sm font-semibold rounded-t-xl transition-colors flex items-center gap-2 ${
+                activeTab === 'summary'
+                  ? 'bg-[#FBF8F2] text-[#B96535] border-t-2 border-t-[#B96535] border-x border-[#DED3C2]'
+                  : 'text-[#827567] hover:text-[#29251F]'
+              }`}
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>Historical Summary</span>
+            </button>
+          </div>
 
-        {/* Tab Panes */}
-        <div>
           {activeTab === 'transcription' && (
             <TranscriptionReader
               recordId={record.id}
@@ -230,59 +246,42 @@ export const ViewerPage: React.FC = () => {
           )}
 
           {activeTab === 'original' && (
-            <FacsimileViewer record={record} />
+            <FacsimileViewer
+              mediaUrl={record.mediaUrl}
+              title={record.title}
+              accessionNumber={record.accessionNumber}
+            />
           )}
 
           {activeTab === 'summary' && (
-            <div className="bg-[#FBF8F2] border border-[#DED3C2] rounded-xl p-6 sm:p-8 space-y-6">
-              <div>
-                <h3 className="font-serif text-xl font-bold text-[#29251F] mb-2">Historical Context & Origin</h3>
-                <p className="text-base text-[#51483F] leading-relaxed">
-                  {record.summary.historicalContext}
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-serif text-xl font-bold text-[#29251F] mb-3">Key Philosophical Themes</h3>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {record.summary.keyThemes.map((theme, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5 bg-[#F5EBDD] p-3 rounded-lg border border-[#DED3C2] text-sm text-[#29251F]">
-                      <span className="w-2 h-2 rounded-full bg-[#B96535] mt-2 shrink-0" />
-                      <span>{theme}</span>
-                    </li>
+            <div className="bg-[#FBF8F2] border border-[#DED3C2] rounded-xl p-6 sm:p-8 space-y-4">
+              <h3 className="font-serif text-lg font-bold text-[#29251F]">Curatorial & Constitutional Analysis</h3>
+              <p className="text-sm text-[#51483F] leading-relaxed">{record.summary.historicalContext}</p>
+              <div className="pt-3 border-t border-[#DED3C2]">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#713F2B] mb-2">Core Thematic Pillars:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {record.summary.keyThemes.map((theme, i) => (
+                    <span key={i} className="text-xs bg-[#E7D5B9] text-[#29251F] px-2.5 py-1 rounded-md font-medium">
+                      {theme}
+                    </span>
                   ))}
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-serif text-xl font-bold text-[#29251F] mb-2">Constitutional & Social Impact</h3>
-                <p className="text-base text-[#29251F] bg-[#E7D5B9]/40 border-l-4 border-[#713F2B] p-4 rounded-r-lg leading-relaxed">
-                  {record.summary.constitutionalSignificance}
-                </p>
+                </div>
               </div>
             </div>
           )}
         </div>
-      </div>
+      )}
 
-      {/* Related Archival Items */}
+      {/* Related Archival Entries */}
       {relatedRecords.length > 0 && (
-        <div className="pt-8 border-t border-[#DED3C2] space-y-5">
+        <div className="pt-8 border-t border-[#DED3C2] space-y-4">
           <div className="flex items-center justify-between">
-            <div>
-              <span className="text-xs font-semibold uppercase tracking-widest text-[#B96535] block mb-0.5">
-                Contextual Links
-              </span>
-              <h3 className="font-serif text-2xl font-bold text-[#29251F]">
-                Related Archival Records
-              </h3>
-            </div>
+            <h3 className="font-serif text-xl font-bold text-[#29251F]">Related Archival Records</h3>
             <Link to="/archive" className="text-xs font-semibold text-[#B96535] hover:underline">
-              Browse full collection →
+              Browse Complete Catalog →
             </Link>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {relatedRecords.map((rel) => (
               <ArchiveCard key={rel.id} record={rel} viewMode="grid" />
             ))}
@@ -290,7 +289,7 @@ export const ViewerPage: React.FC = () => {
         </div>
       )}
 
-      {/* Citation Modal Dialog */}
+      {/* Citation Modal */}
       <CitationModal
         isOpen={citationModalOpen}
         onClose={() => setCitationModalOpen(false)}

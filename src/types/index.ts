@@ -95,6 +95,9 @@ export interface ResearchCitation {
   source: string;
   year: number;
   quoteSnippet: string;
+  pageNumber?: number;
+  viewerUrl?: string;
+  pdfUrl?: string;
 }
 
 export interface ResearchQA {
