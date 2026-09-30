@@ -117,7 +117,7 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
     const windowHeight = window.innerHeight;
     const scrollableDistance = containerHeight - windowHeight;
 
-    const targetProgress = Math.max(0, Math.min(1, (targetSpread + 0.1) / totalSegments));
+    const targetProgress = targetSpread <= 0 ? 0 : Math.max(0, Math.min(1, (targetSpread + 0.1) / totalSegments));
     const targetY = containerTop + targetProgress * scrollableDistance;
 
     window.scrollTo({
@@ -187,7 +187,7 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
       {/* Pinned Sticky Museum Stage */}
       <div
         className="sticky top-16 h-[calc(100vh-4.75rem)] max-h-[860px] w-full flex flex-col justify-between px-3 sm:px-6 py-2 overflow-hidden z-20 rounded-3xl transition-all duration-300"
-        style={currentSpreadIndex === 0 ? {
+        style={!isCoverOpen ? {
           backgroundImage: `radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%), url('https://i.pinimg.com/736x/db/57/c4/db57c43bb1b847a6547f7fa37c3802da.jpg'), url('/wood-texture.jpg')`,
           backgroundColor: '#24160E',
           backgroundSize: 'cover',

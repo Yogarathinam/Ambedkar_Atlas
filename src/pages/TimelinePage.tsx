@@ -53,22 +53,34 @@ export const TimelinePage: React.FC = () => {
   const yearNavRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Disable automatic browser scroll restoration on refresh so 3D Book starts closed at top
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+  }, []);
+
+  useEffect(() => {
     archiveService.getTimelineEvents().then((data) => {
       setAllEvents(data);
 
-      // Check query param ?year=... or hash #timeline-event-... or session memory
+      // Only jump to year if EXPLICITLY requested via URL query param ?year=...
       const paramYear = searchParams.get('year');
-      const sessionYear = sessionStorage.getItem('ambedkar_atlas_timeline_year');
-      const targetYear = paramYear ? parseInt(paramYear, 10) : sessionYear ? parseInt(sessionYear, 10) : null;
-
-      if (targetYear) {
-        setActiveJumpYear(targetYear);
-        setTimeout(() => {
-          const el = document.getElementById(`timeline-event-${targetYear}`);
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 300);
+      if (paramYear) {
+        const targetYear = parseInt(paramYear, 10);
+        if (!isNaN(targetYear)) {
+          setActiveJumpYear(targetYear);
+          setTimeout(() => {
+            const el = document.getElementById(`timeline-event-${targetYear}`);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 300);
+        }
+      } else {
+        // Clean page load without ?year= parameter: ensure start at top with book closed
+        sessionStorage.removeItem('ambedkar_atlas_timeline_year');
+        setActiveJumpYear(null);
+        window.scrollTo({ top: 0, behavior: 'instant' });
       }
     });
   }, [searchParams]);
