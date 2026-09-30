@@ -1,6 +1,6 @@
 import React from 'react';
 import { TimelineEvent } from '../../../types';
-import { EVENT_VISUAL_MAP, DEFAULT_EVENT_VISUAL } from './eventVisuals';
+import { getEventVisual } from './eventVisuals';
 import { 
   Calendar, MapPin, BookOpen, Quote, ShieldCheck, 
   ExternalLink, ChevronRight, FileText 
@@ -20,7 +20,7 @@ export const BookSpread: React.FC<BookSpreadProps> = ({
   onOpenProvenance,
 }) => {
   if (!event) return null;
-  const visual = (event.id && EVENT_VISUAL_MAP[event.id]) || DEFAULT_EVENT_VISUAL;
+  const visual = getEventVisual(event);
   const leftPageNum = pageNumber * 2 - 1;
   const rightPageNum = pageNumber * 2;
 
