@@ -3,6 +3,7 @@ import { TimelineEvent } from '../../../types';
 import { BookCover } from './BookCover';
 import { BookSpread } from './BookSpread';
 import { BookControls } from './BookControls';
+import { BookTableOfContents } from './BookTableOfContents';
 import { bookAudio } from './bookSound';
 import ambedkarLogo from '../../../assets/hero/image.png';
 import { ShieldCheck, BookOpen, ArrowUp, Calendar, ExternalLink } from 'lucide-react';
@@ -256,30 +257,70 @@ export const Historical3DBook: React.FC<Historical3DBookProps> = ({
               {/* ====================================================== */}
               <div className="relative w-full h-full rounded-2xl overflow-hidden bg-[#FAF4EA] flex shadow-inner">
                 
-                {/* When cover is completely closed */}
+                {/* When cover is at spread 0 (Opening Spread: Left = Archival Preface, Right = Table of Contents) */}
                 {currentSpreadIndex === 0 && (
-                  <div
-                    className="w-full h-full flex flex-col items-center justify-center p-4 sm:p-6 text-center space-y-3 rounded-xl"
-                    style={{
-                      backgroundImage: `radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.7) 100%), url('https://i.pinimg.com/736x/db/57/c4/db57c43bb1b847a6547f7fa37c3802da.jpg'), url('/wood-texture.jpg')`,
-                      backgroundColor: '#24160E',
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                    }}
-                  >
-                    <img
-                      src={ambedkarLogo}
-                      alt="Dr. B. R. Ambedkar"
-                      className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md"
-                    />
-                    <div className="space-y-1">
-                      <h3 className="font-serif text-xl sm:text-2xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                        The Book of Ambedkar
-                      </h3>
-                      <p className="text-xs text-white/90 max-w-sm drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                        Scroll down to open the antique chronicle and turn through 24 historic milestones of Dr. B. R. Ambedkar.
-                      </p>
+                  <div className="w-full h-full flex flex-col md:flex-row select-text font-serif">
+                    {/* Left Page (Verso): Closed Book Companion / Frontispiece Underlay */}
+                    <div
+                      className="w-full md:w-1/2 h-full flex flex-col items-center justify-between p-4 sm:p-6 lg:p-7 text-center relative border-r border-[#DED3C2]"
+                      style={{
+                        backgroundImage: `radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.75) 100%), url('https://i.pinimg.com/736x/db/57/c4/db57c43bb1b847a6547f7fa37c3802da.jpg'), url('/wood-texture.jpg')`,
+                        backgroundColor: '#24160E',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }}
+                    >
+                      {/* Subtle gold filigree border */}
+                      <div className="absolute inset-3 border border-[#D4AF37]/30 rounded-xl pointer-events-none" />
+
+                      <div className="relative z-10 pt-1">
+                        <span className="text-[10px] font-mono tracking-widest text-[#D4AF37] uppercase">
+                          National Digital Archive
+                        </span>
+                      </div>
+
+                      <div className="relative z-10 my-auto space-y-2.5 max-w-xs mx-auto">
+                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 mx-auto flex items-center justify-center">
+                          <div className="absolute inset-0 rounded-full border border-[#D4AF37]/50 shadow-[0_0_12px_rgba(212,175,55,0.2)]" />
+                          <img
+                            src={ambedkarLogo}
+                            alt="Dr. B. R. Ambedkar"
+                            className="w-14 h-14 sm:w-16 sm:h-16 object-contain drop-shadow-md"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <h3 className="font-serif text-xl sm:text-2xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                            The Book of Ambedkar
+                          </h3>
+                          <p className="text-[11px] sm:text-xs text-[#E7D5B9] leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                            Traverse 65 years of constitutional drafting, treatises, and historic mass emancipation (1891–1956).
+                          </p>
+                        </div>
+
+                        <div className="pt-1">
+                          <button
+                            type="button"
+                            onClick={() => scrollToSpread(1)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#B96535] hover:bg-[#713F2B] text-white text-xs font-semibold rounded-lg shadow-sm transition-all hover:scale-105 cursor-pointer"
+                          >
+                            <BookOpen className="w-3.5 h-3.5" />
+                            <span>Begin Reading (1891)</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="relative z-10 pb-1 text-[10px] font-mono text-[#D4AF37]/80">
+                        MEA Official Holdings • 24 Milestones
+                      </div>
                     </div>
+
+                    {/* Right Page (Recto): Table of Contents / Conspectus of Epochs & Milestones */}
+                    <BookTableOfContents
+                      events={events}
+                      onSelectSpread={scrollToSpread}
+                      onJumpToYear={handleJumpToYear}
+                    />
                   </div>
                 )}
 
